@@ -64,22 +64,23 @@ struct Late_Night_NotesApp: App {
             if let status = queryItems.first(where: { $0.name == "status" })?.value,
                status == "success",
                let username = queryItems.first(where: { $0.name == "username" })?.value,
-               let userId = queryItems.first(where: { $0.name == "user_id" })?.value, // Retrieve user_id
+               let userId = queryItems.first(where: { $0.name == "user_id" })?.value,
                let notesString = queryItems.first(where: { $0.name == "notes" })?.value {
+                
+                noteStore.loadNotes()
+                print("Loaded guest notes: \(noteStore.notes.map { $0.text })")
 
                 // Base64-decode the notes string
                 if let decodedNotesData = Data(base64Encoded: notesString) {
-                    // Initialize a JSONDecoder and set up the date decoding strategy
                     let decoder = JSONDecoder()
                     let dateFormatter = DateFormatter()
                     dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSSSS"
                     decoder.dateDecodingStrategy = .formatted(dateFormatter)
 
-                    // Custom decoding for the highlighted field
                     do {
                         let rawNotes = try JSONSerialization.jsonObject(with: decodedNotesData) as? [[String: Any]]
-                        
-                        let notes = rawNotes?.compactMap { rawNote -> Note? in
+
+                        let fetchedNotes = rawNotes?.compactMap { rawNote -> Note? in
                             guard let idString = rawNote["id"] as? String,
                                   let text = rawNote["text"] as? String,
                                   let dateCreatedString = rawNote["dateCreated"] as? String,
@@ -87,11 +88,11 @@ struct Late_Night_NotesApp: App {
                                   let highlightedString = rawNote["highlighted"] as? String else {
                                 return nil
                             }
-                            
+
                             let dateCreated = dateFormatter.date(from: dateCreatedString) ?? Date()
                             let dateModified = dateFormatter.date(from: dateModifiedString) ?? Date()
-                            let highlighted = (highlightedString == "t") // Convert "t" or "f" to Bool
-                            
+                            let highlighted = (highlightedString == "t")
+
                             return Note(id: UUID(uuidString: idString) ?? UUID(),
                                         text: text,
                                         dateCreated: dateCreated,
@@ -99,23 +100,43 @@ struct Late_Night_NotesApp: App {
                                         highlighted: highlighted)
                         } ?? []
 
-                        // Update app state to reflect the user login
-                        loggedInUser = username
-                        showNotes = true // Switch to show ContentView
+                        // Merge server-fetched notes with guest notes
+                        let guestNotes = noteStore.notes
+                        var mergedNotes = guestNotes + fetchedNotes
 
-                        // Save login state
+                        // Remove duplicates based on note IDs
+                        let uniqueNotes = Dictionary(mergedNotes.map { ($0.id, $0) }, uniquingKeysWith: { $1 }).values
+                        mergedNotes = Array(uniqueNotes)
+
+                        // Update NoteStore with merged notes
+                        noteStore.notes = mergedNotes
+                        print("Merged notes: \(mergedNotes.map { $0.text })")
+
+                        // Save the merged notes to the server
+                        mergedNotes.forEach { note in
+                            noteStore.addNoteOnServer(note: note, userId: userId) { result in
+                                switch result {
+                                case .success:
+                                    print("Saved note to server: \(note.text)")
+                                case .failure(let error):
+                                    print("Failed to save note to server: \(error.localizedDescription)")
+                                }
+                            }
+                        }
+
+                        // Save login state and notes locally
+                        loggedInUser = username
+                        showNotes = true
                         UserDefaults.standard.set(true, forKey: "isLoggedIn")
                         UserDefaults.standard.set(username, forKey: "loggedInUser")
-                        UserDefaults.standard.set(userId, forKey: "userId") // Save userId to UserDefaults
+                        UserDefaults.standard.set(userId, forKey: "userId")
 
-                        // Save notes in UserDefaults
-                        if let encodedNotes = try? JSONEncoder().encode(notes) {
+                        if let encodedNotes = try? JSONEncoder().encode(mergedNotes) {
                             UserDefaults.standard.set(encodedNotes, forKey: "savedNotes")
                         }
 
                         showSafari = false
-                        
-                        print("Login successful with username: \(username), userId: \(userId), and \(notes.count) notes")
+                        print("Login successful with username: \(username), userId: \(userId), and \(mergedNotes.count) notes")
                     } catch {
                         print("Failed to decode notes data: \(error)")
                     }
@@ -127,6 +148,7 @@ struct Late_Night_NotesApp: App {
             }
         }
     }
+
 
 
     private func resetToInitialState() {

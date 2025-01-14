@@ -35,6 +35,8 @@ class NoteStore: ObservableObject {
         let newNote = Note(text: text)
         notes.append(newNote)
         sortNotes()
+        saveNotes()
+        print("Added guest note: \(newNote.text)")
     
             let userId = UserDefaults.standard.string(forKey: "userId") ?? ""
             if userId.isEmpty {
@@ -178,7 +180,7 @@ class NoteStore: ObservableObject {
         }
     
     
-    private func loadNotes() {
+    public func loadNotes() {
         
         if let savedNotesData = UserDefaults.standard.data(forKey: notesKey) {
             if let decodedNotes = try? JSONDecoder().decode([Note].self, from: savedNotesData) {
