@@ -10,14 +10,11 @@ struct Late_Night_NotesApp: App {
     @StateObject private var noteStore = NoteStore()
     @StateObject private var networkMonitor = NetworkMonitor()
 
-    // Add a state to track the local network permission request
     @State private var localNetworkPermissionRequested = false
-    
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     var body: some Scene {
         WindowGroup {
-            // Show the main content if logged in, else show the intro view
             if showNotes {
                 ContentView(showSafari: $showSafari, username: loggedInUser ?? "Guest", onLogout: resetToInitialState)
                     .environmentObject(noteStore)
@@ -38,7 +35,7 @@ struct Late_Night_NotesApp: App {
                             }
                         }
 
-                        //networkRule.requestLocalNetworkPermission()
+                        fetchUserData()
                     }
             } else {
                 IntroView(
@@ -64,13 +61,13 @@ struct Late_Night_NotesApp: App {
             if let status = queryItems.first(where: { $0.name == "status" })?.value,
                status == "success",
                let username = queryItems.first(where: { $0.name == "username" })?.value,
-               let userId = queryItems.first(where: { $0.name == "user_id" })?.value,
+               let userIdString = queryItems.first(where: { $0.name == "user_id" })?.value,
+                      let userId = Int(userIdString),
                let notesString = queryItems.first(where: { $0.name == "notes" })?.value {
-                
+
                 noteStore.loadNotes()
                 print("Loaded guest notes: \(noteStore.notes.map { $0.text })")
 
-                // Base64-decode the notes string
                 if let decodedNotesData = Data(base64Encoded: notesString) {
                     let decoder = JSONDecoder()
                     let dateFormatter = DateFormatter()
@@ -100,21 +97,17 @@ struct Late_Night_NotesApp: App {
                                         highlighted: highlighted)
                         } ?? []
 
-                        // Merge server-fetched notes with guest notes
                         let guestNotes = noteStore.notes
                         var mergedNotes = guestNotes + fetchedNotes
 
-                        // Remove duplicates based on note IDs
                         let uniqueNotes = Dictionary(mergedNotes.map { ($0.id, $0) }, uniquingKeysWith: { $1 }).values
                         mergedNotes = Array(uniqueNotes)
 
-                        // Update NoteStore with merged notes
                         noteStore.notes = mergedNotes
                         print("Merged notes: \(mergedNotes.map { $0.text })")
 
-                        // Save the merged notes to the server
                         mergedNotes.forEach { note in
-                            noteStore.addNoteOnServer(note: note, userId: userId) { result in
+                            noteStore.addNoteOnServer(note: note, userId: userIdString) { result in
                                 switch result {
                                 case .success:
                                     print("Saved note to server: \(note.text)")
@@ -124,7 +117,6 @@ struct Late_Night_NotesApp: App {
                             }
                         }
 
-                        // Save login state and notes locally
                         loggedInUser = username
                         showNotes = true
                         UserDefaults.standard.set(true, forKey: "isLoggedIn")
@@ -149,14 +141,10 @@ struct Late_Night_NotesApp: App {
         }
     }
 
-
-
     private func resetToInitialState() {
-        // Reset properties
         loggedInUser = nil
         showNotes = false
 
-        // Clear UserDefaults
         UserDefaults.standard.removePersistentDomain(forName: Bundle.main.bundleIdentifier!)
         UserDefaults.standard.removeObject(forKey: "loggedInUser")
         UserDefaults.standard.set(false, forKey: "isLoggedIn")
@@ -164,6 +152,97 @@ struct Late_Night_NotesApp: App {
         print("App state reset to initial state.")
     }
 
-}
+    private func fetchUserData() {
+        guard let userId = UserDefaults.standard.value(forKey: "userId") as? Int else {
+            print("No logged-in user ID found. Skipping data fetch.")
+            return
+        }
 
+        print("Fetching data for logged-in user: \(userId)")
+
+        NetworkService.shared.fetchNotes(userId: userId) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let json):
+                    // Log the raw response
+                    if let rawResponse = String(data: try! JSONSerialization.data(withJSONObject: json), encoding: .utf8) {
+                        print("Raw response: \(rawResponse)")
+                    }
+
+                    // Check if the response has a 'status' field and that it is 'success'
+                    guard let status = json["status"] as? String, status == "success" else {
+                        print("Error: Invalid status in response or no notes found.")
+                        return
+                    }
+
+                    // Extract the user information
+                    if let userDict = json["user"] as? [String: Any],
+                       let username = userDict["username"] as? String {
+                        loggedInUser = username
+                        print("Username: \(username)")
+                    }
+
+                    // Extract the notes array
+                    if let notesArray = json["notes"] as? [[String: Any]] {
+                        var fetchedNotes: [Note] = []
+                        
+                        // Debugging: Check the structure of each note
+                        print("Notes array: \(notesArray)")
+
+                        let dateFormatter = DateFormatter()
+                        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSSSS"
+                        
+                        for noteDict in notesArray {
+                            // Debugging: Check individual note
+                            print("Parsing note: \(noteDict)")
+
+                            if let idString = noteDict["id"] as? String,
+                               let text = noteDict["text"] as? String,
+                               let dateCreatedString = noteDict["dateCreated"] as? String,
+                               let dateModifiedString = noteDict["dateModified"] as? String,
+                               let highlighted = noteDict["highlighted"] as? Bool {
+                                
+                                let dateCreated = dateFormatter.date(from: dateCreatedString) ?? Date()
+                                let dateModified = dateFormatter.date(from: dateModifiedString) ?? Date()
+
+                                // Create a new Note object from the dictionary
+                                let note = Note(id: UUID(uuidString: idString) ?? UUID(),
+                                                text: text,
+                                                dateCreated: dateCreated,
+                                                dateModified: dateModified,
+                                                highlighted: highlighted)
+                                
+                                // Add the note to the array
+                                fetchedNotes.append(note)
+                            } else {
+                                print("Error: Missing fields in note: \(noteDict)")
+                            }
+                        }
+
+                        // Update the NoteStore with the fetched notes
+                        noteStore.notes = fetchedNotes
+                        print("Fetched \(fetchedNotes.count) notes from server.")
+
+                        // Optionally, save the notes to UserDefaults
+                        if let encodedNotes = try? JSONEncoder().encode(fetchedNotes) {
+                            UserDefaults.standard.set(encodedNotes, forKey: "savedNotes")
+                            print("Saved notes to UserDefaults")
+                        }
+
+                    } else {
+                        print("Error: No notes found in the response.")
+                    }
+
+                case .failure(let error):
+                    print("Failed to fetch notes from server: \(error.localizedDescription)")
+                }
+            }
+        }
+    }
+
+
+
+
+
+}
 

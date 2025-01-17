@@ -172,6 +172,11 @@ class NoteStore: ObservableObject {
         }
     }
     
+    func clearNotes() {
+            notes.removeAll()
+            print("Cleared all notes from NoteStore")
+        }
+    
     
     public func saveArchivedNotes() {
             if let encodedArchivedNotes = try? JSONEncoder().encode(archivedNotes) {
