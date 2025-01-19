@@ -1,10 +1,3 @@
-//
-//  IntroView.swift
-//  Late-Night Notes
-//
-//  Created by Deyan on 5.10.24.
-//
-
 import SwiftUI
 import SafariServices
 
@@ -24,25 +17,17 @@ struct IntroView: View {
     @Binding var showSafari: Bool
 
     @State private var ipAddress: String = "" // Default IP
-    private var loginUrlString: String {
-        "http://\(ipAddress)/project/Login/construct.php?AppRequest=true"
-    }
+    @State private var showIPInputModal: Bool = false
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
-                Text("Welcome to the NoteBlocks Official App")
+                Text("Welcome to NoteBlocks")
                     .font(.largeTitle)
                     .padding()
 
-                TextField("Enter Server IP Address", text: $ipAddress)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding()
-                    .keyboardType(.URL) // Suggest a keyboard suitable for entering URLs or IPs
-
                 Button(action: {
-                    showSafari = true
-                    print(loginUrlString)
+                    showIPInputModal = true
                 }) {
                     Text("Log In")
                         .font(.system(size: 18, weight: .bold, design: .rounded))
@@ -58,6 +43,9 @@ struct IntroView: View {
                         )
                         .foregroundColor(.white)
                         .cornerRadius(15)
+                }
+                .sheet(isPresented: $showIPInputModal) {
+                    IPInputView(ipAddress: $ipAddress)
                 }
 
                 Button(action: {
@@ -87,15 +75,7 @@ struct IntroView: View {
             }
             .padding()
             .navigationDestination(isPresented: $showNotes) {
-                ContentView(showSafari: $showSafari, username: loggedInUser ?? "Guest", onLogout: {})
-            }
-            .sheet(isPresented: $showSafari, onDismiss: {
-                // Reset the login state when the sheet is dismissed (if necessary)
-                // Optionally, you can clear the username if the user didn't log in
-            }) {
-                if let url = URL(string: loginUrlString) {
-                    SafariView(url: url)
-                }
+                ContentView(showSafari: .constant(false), username: loggedInUser ?? "Guest", onLogout: {})
             }
         }
     }

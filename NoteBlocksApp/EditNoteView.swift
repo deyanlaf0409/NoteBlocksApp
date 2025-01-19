@@ -166,6 +166,7 @@ struct ReminderPicker: View {
                 )
                 .foregroundColor(.white)
                 .cornerRadius(15)
+                .offset(y: -150)
             }
             .navigationTitle("Select Date & Time")
             .navigationBarItems(trailing: Button("Cancel") {
