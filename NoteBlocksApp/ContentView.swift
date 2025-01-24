@@ -44,10 +44,33 @@ struct ContentView: View {
                             .font(.headline)
                             .foregroundColor(.blue)
                             .padding()
+
+                        Button(action: {
+                            // Reset app storage and log in as a guest
+                            onLogout()
+                            showAlert = false // Dismiss any network alert
+                        }) {
+                            Text("Continue Offline")
+                                .font(.system(size: 18, weight: .bold, design: .rounded))
+                                .padding(.vertical, 8)
+                                .padding(.horizontal, 12)
+                                .frame(maxWidth: 150)
+                                .background(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [Color.black, Color.black]),
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                                .foregroundColor(.white)
+                                .cornerRadius(15)
+                        }
+                        .padding(.top, 16)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .background(Color.white)
-                } else {
+                }
+ else {
                     VStack {
                         HStack {
                             Text("Logged in as \(username)")
