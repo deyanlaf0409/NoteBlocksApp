@@ -120,6 +120,23 @@ struct ContentView: View {
                                         .foregroundColor(.white)
                                         .cornerRadius(15)
                                 }
+                                
+                                NavigationLink(destination: FolderView().environmentObject(noteStore)) {
+                                        Text("Folders")
+                                            .font(.system(size: 18, weight: .bold, design: .rounded))
+                                            .padding(.vertical, 8)
+                                            .padding(.horizontal, 12)
+                                            .frame(maxWidth: 150)
+                                            .background(
+                                                LinearGradient(
+                                                    gradient: Gradient(colors: [Color.black, Color.black]),
+                                                    startPoint: .leading,
+                                                    endPoint: .trailing
+                                                )
+                                            )
+                                            .foregroundColor(.white)
+                                            .cornerRadius(15)
+                                    }
 
                                 if username == "Guest" {
                                     Button(action: {
@@ -196,6 +213,7 @@ struct ContentView: View {
                                     noteStore.addNote(newNoteText)
                                     newNoteText = ""
                                     dismissKeyboard()
+                                    noteStore.loadNotes()
                                 }
                             }) {
                                 Image(systemName: "plus.circle.fill")

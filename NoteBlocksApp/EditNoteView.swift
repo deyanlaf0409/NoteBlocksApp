@@ -9,12 +9,23 @@ struct EditNoteView: View {
     @State private var editedText: String = ""
     @State private var reminderDate: Date? = nil
     @State private var showingReminderSheet: Bool = false
+    @State private var selectedFolderId: UUID?
 
     var body: some View {
         VStack {
             TextField("Edit note", text: $editedText)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .padding()
+            
+            
+            Picker("Select Folder", selection: $selectedFolderId) {
+                Text("None").tag(UUID?.none)
+                ForEach(noteStore.folders, id: \.id) { folder in
+                    Text(folder.name).tag(folder.id as UUID?)
+                }
+            }
+            .pickerStyle(MenuPickerStyle())
+
 
             Button(action: { showingReminderSheet.toggle() }) {
                 HStack {
@@ -73,6 +84,9 @@ struct EditNoteView: View {
         .onAppear {
             editedText = note.text
             reminderDate = note.reminderDate // Restore reminder date
+            noteStore.loadFolders()
+            selectedFolderId = note.folderID
+            print("Folders in picker: \(noteStore.folders)")
         }
         .sheet(isPresented: $showingReminderSheet) {
             ReminderPicker(reminderDate: $reminderDate)
@@ -81,6 +95,13 @@ struct EditNoteView: View {
 
     private func saveNote() {
         note.text = editedText
+        
+        if let folderId = selectedFolderId {
+                    note.folderID = folderId
+                } else {
+                    note.folderID = nil
+                }
+        
         note.dateModified = Date()
         note.reminderDate = reminderDate
         noteStore.updateNoteText($note, with: editedText)

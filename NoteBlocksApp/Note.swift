@@ -7,6 +7,12 @@
 
 import Foundation
 
+struct Folder: Identifiable, Codable {
+    let id: UUID
+    var name: String
+}
+
+
 struct Note: Identifiable, Codable {
     var id: UUID
     var text: String
@@ -18,6 +24,7 @@ struct Note: Identifiable, Codable {
         var hasReminder: Bool {
             reminderDate != nil
         }
+    var folderID: UUID?
 
     // Default initializer for creating new notes
     init(text: String) {
@@ -27,6 +34,7 @@ struct Note: Identifiable, Codable {
         self.dateModified = Date()
         self.highlighted = false
         self.isArchived = false
+        var _: UUID?
     }
 
     // Custom initializer for decoding notes from deep links
@@ -37,6 +45,7 @@ struct Note: Identifiable, Codable {
         self.dateModified = dateModified
         self.highlighted = highlighted
         self.isArchived = false
+        var _: UUID?
     }
 }
 

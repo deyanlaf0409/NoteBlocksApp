@@ -21,13 +21,76 @@ class NoteStore: ObservableObject {
         }
     }
     
+    @Published var folders: [Folder] = [] {
+            didSet {
+                saveFolders()
+            }
+        }
+        
+    
     private let notesKey = "savedNotes"
     private let archivedNotesKey = "archivedNotes"
+    private let foldersKey = "savedFolders"
 
     
     init() {
         loadNotes()
         loadArchivedNotes()
+        loadFolders()
+    }
+    
+    
+    func addFolder(name: String) {
+        let newFolder = Folder(id: UUID(), name: name)
+        folders.append(newFolder)
+        
+        // Save updated folders to UserDefaults
+        saveFolders()
+    }
+    
+    func deleteFolder(_ folder: Folder) {
+        // Archive notes in the folder being deleted
+        let notesToArchive = notes.filter { $0.folderID == folder.id }
+        for note in notesToArchive {
+            var archivedNote = note
+            archivedNote.isArchived = true
+            archivedNote.dateModified = Date()  // Update the modification date
+            cancelNotification(for: &archivedNote)  // Cancel notifications for archived note
+            archivedNotes.append(archivedNote)  // Add it to archived notes
+            
+            // Remove the note from the active notes list
+            if let indexToRemove = notes.firstIndex(where: { $0.id == note.id }) {
+                notes.remove(at: indexToRemove)
+            }
+        }
+        
+        // Remove the folder from the folders list
+        if let indexToRemove = folders.firstIndex(where: { $0.id == folder.id }) {
+            folders.remove(at: indexToRemove)
+        }
+    }
+
+
+
+
+
+        
+        func folderName(for id: UUID?) -> String? {
+            return folders.first(where: { $0.id == id })?.name
+        }
+    
+    func saveFolders() {
+            if let encoded = try? JSONEncoder().encode(folders) {
+                UserDefaults.standard.set(encoded, forKey: foldersKey)
+            }
+        }
+        
+    func loadFolders() {
+        if let savedData = UserDefaults.standard.data(forKey: foldersKey),
+           let decoded = try? JSONDecoder().decode([Folder].self, from: savedData) {
+            folders = decoded
+            print("Loaded folders: \(folders)")  // Debugging line
+        }
     }
     
     
