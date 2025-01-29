@@ -43,6 +43,12 @@ class NoteStore: ObservableObject {
     func addFolder(name: String) {
         let newFolder = Folder(id: UUID(), name: name)
         folders.append(newFolder)
+        let userId = UserDefaults.standard.string(forKey: "userId") ?? ""
+        if userId.isEmpty {
+            print("Guest user: Folder created locally.")
+        }else{
+            addFolderToServer(folder: newFolder, userId: userId)
+        }
         
         // Save updated folders to UserDefaults
         saveFolders()
@@ -342,7 +348,8 @@ class NoteStore: ObservableObject {
             "id": note.id.uuidString,
             "text": note.text,
             "dateModified": formattedDate,
-            "highlight": note.highlighted
+            "highlight": note.highlighted,
+            "folderId": note.folderID?.uuidString ?? ""
         ]
 
         do {
@@ -417,4 +424,53 @@ class NoteStore: ObservableObject {
 
         task.resume()
     }
+    
+    
+    // MARK: - Server Add Folder Method
+    // Modified to upload the existing folder id
+        public func addFolderToServer(folder: Folder, userId: String) {
+            guard let url = URL(string: "http://192.168.0.222/project/API/addFolder.php") else {
+                print("Invalid URL")
+                return
+            }
+
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            
+            // Use the existing id of the folder
+            let json: [String: Any] = [
+                "folder_id": folder.id.uuidString, // Use the existing UUID
+                "user_id": userId,
+                "name": folder.name
+            ]
+            
+            do {
+                let jsonData = try JSONSerialization.data(withJSONObject: json, options: [])
+                let jsonString = String(data: jsonData, encoding: .utf8) // Convert to String for logging
+                print("Sending JSON: \(jsonString ?? "nil")") // Print the JSON
+                request.httpBody = jsonData // Set the request body to the serialized JSON
+            } catch {
+                print("Error serializing JSON: \(error)")
+                return
+            }
+
+            // Perform the network request to add the folder on the server
+            let task = URLSession.shared.dataTask(with: request) { data, response, error in
+                if let error = error {
+                    print("Error sending request: \(error)")
+                    return
+                }
+
+                // Check response status
+                guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+                    print("Error: Invalid server response")
+                    return
+                }
+
+            }
+
+            task.resume() // Start the network request
+        }
+
 }
