@@ -34,7 +34,7 @@ struct Note: Identifiable, Codable {
         self.dateModified = Date()
         self.highlighted = false
         self.isArchived = false
-        var _: UUID?
+        self.folderID = UUID()
     }
 
     // Custom initializer for decoding notes from deep links
@@ -45,7 +45,7 @@ struct Note: Identifiable, Codable {
         self.dateModified = dateModified
         self.highlighted = highlighted
         self.isArchived = false
-        var _: UUID?
+        self.folderID = UUID()
     }
 }
 

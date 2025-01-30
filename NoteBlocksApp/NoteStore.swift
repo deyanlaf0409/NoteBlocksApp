@@ -56,6 +56,31 @@ class NoteStore: ObservableObject {
     
     
     
+    func updateFolder(id: UUID, newName: String) {
+        // Find the folder locally by its id
+        if let folderIndex = folders.firstIndex(where: { $0.id == id }) {
+            // Update the folder's name locally
+            folders[folderIndex].name = newName
+            
+            // Get the userId from UserDefaults
+            let userId = UserDefaults.standard.string(forKey: "userId") ?? ""
+            
+            // If the user is logged in, update the folder on the server
+            if !userId.isEmpty {
+                updateFolderOnServer(folderId: id, newName: newName, userId: userId)
+            } else {
+                print("Guest user: Folder updated locally.")
+            }
+            
+            // Save the updated folders to UserDefaults
+            saveFolders()
+        } else {
+            print("Folder not found.")
+        }
+    }
+    
+    
+    
     func deleteFolder(_ folder: Folder) {
         let userId = UserDefaults.standard.string(forKey: "userId") ?? ""
         
@@ -568,6 +593,66 @@ class NoteStore: ObservableObject {
             }
         }
         task.resume()
+    }
+    
+    
+    
+    
+    //MARK: - update the folder on the server
+    public func updateFolderOnServer(folderId: UUID, newName: String, userId: String) {
+        guard let url = URL(string: "http://192.168.0.222/project/API/updateFolder.php") else {
+            print("Invalid URL")
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        // Prepare the JSON body to update the folder
+        let json: [String: Any] = [
+            "folderId": folderId.uuidString, // Folder ID
+            "userId": userId,                // User ID
+            "name": newName                   // New name for the folder
+        ]
+        
+        do {
+            let jsonData = try JSONSerialization.data(withJSONObject: json, options: [])
+            let jsonString = String(data: jsonData, encoding: .utf8) // Convert to String for logging
+            print("Sending JSON: \(jsonString ?? "nil")") // Print the JSON
+            request.httpBody = jsonData // Set the request body to the serialized JSON
+        } catch {
+            print("Error serializing JSON: \(error)")
+            return
+        }
+
+        // Perform the network request to update the folder on the server
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Error sending request: \(error)")
+                return
+            }
+
+            // Check response status
+            guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+                print("Error: Invalid server response")
+                return
+            }
+
+            // Optionally, parse the server response if needed
+            if let data = data {
+                do {
+                    let responseJSON = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+                    if let message = responseJSON?["message"] as? String {
+                        print("Server response message: \(message)")
+                    }
+                } catch {
+                    print("Failed to parse JSON response: \(error.localizedDescription)")
+                }
+            }
+        }
+
+        task.resume() // Start the network request
     }
 
 

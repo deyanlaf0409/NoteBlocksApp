@@ -45,10 +45,6 @@ struct FolderView: View {
                                     .foregroundColor(.blue) // Adjust color as desired
                                 Text(folder.name)
                                 
-                                Spacer()
-                                Spacer()
-                                Spacer()
-                                Spacer()
                                 
                                 let noteCount = noteStore.notes.filter { $0.folderID == folder.id }.count
                                 Text("\(noteCount)")
