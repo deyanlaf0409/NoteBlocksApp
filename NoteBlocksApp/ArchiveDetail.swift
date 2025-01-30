@@ -119,6 +119,7 @@ struct NoteDetailView: View {
                         print("Failed to restore note on the server: \(error.localizedDescription)")
                     }
                 }
+                
             }
         } else {
             print("Note not found in archived notes.")

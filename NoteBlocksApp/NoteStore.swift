@@ -54,27 +54,79 @@ class NoteStore: ObservableObject {
         saveFolders()
     }
     
+    
+    
     func deleteFolder(_ folder: Folder) {
-        // Archive notes in the folder being deleted
+        let userId = UserDefaults.standard.string(forKey: "userId") ?? ""
+        
+        // Find notes in the folder
         let notesToArchive = notes.filter { $0.folderID == folder.id }
+        
+        // Archive notes locally
         for note in notesToArchive {
             var archivedNote = note
             archivedNote.isArchived = true
-            archivedNote.dateModified = Date()  // Update the modification date
-            cancelNotification(for: &archivedNote)  // Cancel notifications for archived note
-            archivedNotes.append(archivedNote)  // Add it to archived notes
+            archivedNote.folderID = nil
+            archivedNote.dateModified = Date()
+            cancelNotification(for: &archivedNote)
+            archivedNotes.append(archivedNote)
             
-            // Remove the note from the active notes list
-            if let indexToRemove = notes.firstIndex(where: { $0.id == note.id }) {
-                notes.remove(at: indexToRemove)
+            if let index = notes.firstIndex(where: { $0.id == note.id }) {
+                notes.remove(at: index)
             }
         }
         
-        // Remove the folder from the folders list
-        if let indexToRemove = folders.firstIndex(where: { $0.id == folder.id }) {
-            folders.remove(at: indexToRemove)
+        // Remove the folder locally
+        if let folderIndex = folders.firstIndex(where: { $0.id == folder.id }) {
+            folders.remove(at: folderIndex) // Remove the folder from the local array
+        }
+
+        // Save locally
+        saveFolders()
+        saveNotes()
+        saveArchivedNotes()
+
+        // If it's a guest user, just print locally
+        if userId.isEmpty {
+            print("Guest user: Folder deleted locally.")
+        } else {
+            // 3. Delete notes first
+            deleteNotesInFolder(notes: notesToArchive, folderId: folder.id, userId: userId) {
+                // After deleting all notes, delete the folder from the server
+                self.deleteFolderFromServer(folderId: folder.id, userId: userId)
+            }
         }
     }
+
+
+    
+    
+    
+    func deleteNotesInFolder(notes: [Note], folderId: UUID, userId: String, completion: @escaping () -> Void) {
+        var remainingNotes = notes
+
+        guard !remainingNotes.isEmpty else {
+            // No more notes to delete, trigger the folder deletion
+            completion()
+            return
+        }
+
+        let noteToDelete = remainingNotes.removeFirst()
+
+        deleteNoteOnServer(noteId: noteToDelete.id) { result in
+            switch result {
+            case .success:
+                print("Note deleted successfully on server.")
+            case .failure(let error):
+                print("Failed to delete note on server: \(error.localizedDescription)")
+            }
+            // Recursively delete the next note
+            self.deleteNotesInFolder(notes: remainingNotes, folderId: folderId, userId: userId, completion: completion)
+        }
+    }
+
+
+
 
 
 
@@ -330,7 +382,7 @@ class NoteStore: ObservableObject {
     
     // MARK: - Server Update Method
     
-    private func updateNoteOnServer(note: Note, completion: @escaping (Result<Void, Error>) -> Void) {
+    public func updateNoteOnServer(note: Note, completion: @escaping (Result<Void, Error>) -> Void) {
         guard let url = URL(string: "http://192.168.0.222/project/API/updateNote.php") else {
             completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
             return
@@ -472,5 +524,52 @@ class NoteStore: ObservableObject {
 
             task.resume() // Start the network request
         }
+    
+    
+    
+    
+    // MARK: - Server Delete Folder Method
+    public func deleteFolderFromServer(folderId: UUID, userId: String) {
+        let url = URL(string: "http://192.168.0.222/project/API/deleteFolder.php")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        print(folderId.uuidString)
+
+        let requestBody: [String: Any] = ["folderId": folderId.uuidString, "userId": userId]
+        request.httpBody = try? JSONSerialization.data(withJSONObject: requestBody)
+
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Failed to delete folder: \(error.localizedDescription)")
+                return
+            }
+
+            // Check HTTP Response Status Code
+            if let httpResponse = response as? HTTPURLResponse {
+                if httpResponse.statusCode == 200 {
+                    print("Folder deleted successfully from server")
+                } else {
+                    print("Failed to delete folder, HTTP Status Code: \(httpResponse.statusCode)")
+                }
+            }
+
+            // Check response data (JSON)
+            if let data = data {
+                do {
+                    let responseJSON = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+                    if let message = responseJSON?["message"] as? String {
+                        print("Server response message: \(message)")
+                    }
+                } catch {
+                    print("Failed to parse JSON response: \(error.localizedDescription)")
+                }
+            }
+        }
+        task.resume()
+    }
+
+
 
 }
