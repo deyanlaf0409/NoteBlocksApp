@@ -23,7 +23,7 @@ struct Late_Night_NotesApp: App {
                         handleDeepLink(url: url)
                     }
                     .onAppear {
-                        let dummyNote = Note(id: UUID(), text: "Test Note", dateCreated: Date(), dateModified: Date(), highlighted: false)
+                        let dummyNote = Note(id: UUID(), text: "Test Note", dateCreated: Date(), dateModified: Date(), highlighted: false, folderId: nil)
                         let userId = "12345"
 
                         noteStore.addNoteOnServer(note: dummyNote, userId: userId) { result in
@@ -62,13 +62,15 @@ struct Late_Night_NotesApp: App {
                status == "success",
                let username = queryItems.first(where: { $0.name == "username" })?.value,
                let userIdString = queryItems.first(where: { $0.name == "user_id" })?.value,
-                      let userId = Int(userIdString),
-               let notesString = queryItems.first(where: { $0.name == "notes" })?.value {
+               let userId = Int(userIdString),
+               let notesString = queryItems.first(where: { $0.name == "notes" })?.value,
+               let foldersString = queryItems.first(where: { $0.name == "folders" })?.value {
 
                 noteStore.loadNotes()
                 print("Loaded guest notes: \(noteStore.notes.map { $0.text })")
 
-                if let decodedNotesData = Data(base64Encoded: notesString) {
+                if let decodedNotesData = Data(base64Encoded: notesString),
+                   let decodedFoldersData = Data(base64Encoded: foldersString) {
                     let decoder = JSONDecoder()
                     let dateFormatter = DateFormatter()
                     dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSSSS"
@@ -76,35 +78,58 @@ struct Late_Night_NotesApp: App {
 
                     do {
                         let rawNotes = try JSONSerialization.jsonObject(with: decodedNotesData) as? [[String: Any]]
+                        let rawFolders = try JSONSerialization.jsonObject(with: decodedFoldersData) as? [[String: Any]]
 
                         let fetchedNotes = rawNotes?.compactMap { rawNote -> Note? in
                             guard let idString = rawNote["id"] as? String,
                                   let text = rawNote["text"] as? String,
                                   let dateCreatedString = rawNote["dateCreated"] as? String,
                                   let dateModifiedString = rawNote["dateModified"] as? String,
-                                  let highlightedString = rawNote["highlighted"] as? String else {
-                                return nil
+                                  let highlightedString = rawNote["highlighted"] as? String,
+                                  let folderIdString = rawNote["folderId"] as? String else {
+                                        return nil
                             }
 
                             let dateCreated = dateFormatter.date(from: dateCreatedString) ?? Date()
                             let dateModified = dateFormatter.date(from: dateModifiedString) ?? Date()
                             let highlighted = (highlightedString == "t")
+                            let folderId = UUID(uuidString: folderIdString) ?? UUID()
 
                             return Note(id: UUID(uuidString: idString) ?? UUID(),
                                         text: text,
                                         dateCreated: dateCreated,
                                         dateModified: dateModified,
-                                        highlighted: highlighted)
+                                        highlighted: highlighted,
+                                        folderId: folderId)
+
+                        } ?? []
+
+                        let fetchedFolders = rawFolders?.compactMap { rawFolder -> Folder? in
+                            guard let idString = rawFolder["id"] as? String,
+                                  let name = rawFolder["name"] as? String else {
+                                return nil
+                            }
+
+                            return Folder(id: UUID(uuidString: idString) ?? UUID(), name: name)
                         } ?? []
 
                         let guestNotes = noteStore.notes
+                        let guestFolders = noteStore.folders
+                        
                         var mergedNotes = guestNotes + fetchedNotes
-
+                        var mergedFolders = guestFolders + fetchedFolders
+                        
                         let uniqueNotes = Dictionary(mergedNotes.map { ($0.id, $0) }, uniquingKeysWith: { $1 }).values
+                        let uniqueFolders = Dictionary(mergedFolders.map { ($0.id, $0) }, uniquingKeysWith: { $1 }).values
+                        
                         mergedNotes = Array(uniqueNotes)
-
+                        mergedFolders = Array(uniqueFolders)
+                        
                         noteStore.notes = mergedNotes
+                        noteStore.folders = mergedFolders
+                        
                         print("Merged notes: \(mergedNotes.map { $0.text })")
+                        print("Merged folders: \(mergedFolders.map { $0.name })")
 
                         mergedNotes.forEach { note in
                             noteStore.addNoteOnServer(note: note, userId: userIdString) { result in
@@ -117,6 +142,10 @@ struct Late_Night_NotesApp: App {
                             }
                         }
 
+                        mergedFolders.forEach { folder in
+                                                noteStore.addFolderToServer(folder: folder, userId: userIdString)
+                                            }
+
                         loggedInUser = username
                         showNotes = true
                         UserDefaults.standard.set(true, forKey: "isLoggedIn")
@@ -127,19 +156,24 @@ struct Late_Night_NotesApp: App {
                             UserDefaults.standard.set(encodedNotes, forKey: "savedNotes")
                         }
 
+                        if let encodedFolders = try? JSONEncoder().encode(mergedFolders) {
+                            UserDefaults.standard.set(encodedFolders, forKey: "savedFolders")
+                        }
+
                         showSafari = false
-                        print("Login successful with username: \(username), userId: \(userId), and \(mergedNotes.count) notes")
+                        print("Login successful with username: \(username), userId: \(userId), \(mergedNotes.count) notes, and \(mergedFolders.count) folders")
                     } catch {
-                        print("Failed to decode notes data: \(error)")
+                        print("Failed to decode notes or folders data: \(error)")
                     }
                 } else {
-                    print("Failed to Base64 decode the notes data")
+                    print("Failed to Base64 decode the notes or folders data")
                 }
             } else {
                 print("Login failed or invalid deep link")
             }
         }
     }
+
 
     private func resetToInitialState() {
         loggedInUser = nil
@@ -182,16 +216,54 @@ struct Late_Night_NotesApp: App {
                         print("Username: \(username)")
                     }
 
-                    // Extract the notes array
+                    // Extract the folders array
+                    if let foldersArray = json["folders"] as? [[String: Any]] {
+                        var fetchedFolders: [Folder] = []
+
+                        // Debugging: Check the structure of each folder
+                        print("Folders array: \(foldersArray)")
+
+                        for folderDict in foldersArray {
+                            print("Parsing folder: \(folderDict)")
+
+                            if let idString = folderDict["id"] as? String,
+                               let name = folderDict["name"] as? String {
+                                
+                                // Create a new Folder object
+                                let folder = Folder(id: UUID(uuidString: idString) ?? UUID(),
+                                                    name: name)
+                                
+                                // Add the folder to the array
+                                fetchedFolders.append(folder)
+                            } else {
+                                print("Error: Missing fields in folder: \(folderDict)")
+                            }
+                        }
+
+                        // Update the FolderStore with the fetched folders
+                        noteStore.folders = fetchedFolders
+                        print("Fetched \(fetchedFolders.count) folders from server.")
+
+                        // Optionally, save the folders to UserDefaults
+                        if let encodedFolders = try? JSONEncoder().encode(fetchedFolders) {
+                            UserDefaults.standard.set(encodedFolders, forKey: "savedFolders")
+                            print("Saved folders to UserDefaults")
+                        }
+
+                    } else {
+                        print("Error: No folders found in the response.")
+                    }
+
+                    // Extract the notes array (as you did before)
                     if let notesArray = json["notes"] as? [[String: Any]] {
                         var fetchedNotes: [Note] = []
-                        
+
                         // Debugging: Check the structure of each note
                         print("Notes array: \(notesArray)")
 
                         let dateFormatter = DateFormatter()
                         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSSSS"
-                        
+
                         for noteDict in notesArray {
                             // Debugging: Check individual note
                             print("Parsing note: \(noteDict)")
@@ -201,7 +273,10 @@ struct Late_Night_NotesApp: App {
                                let dateCreatedString = noteDict["dateCreated"] as? String,
                                let dateModifiedString = noteDict["dateModified"] as? String,
                                let highlighted = noteDict["highlighted"] as? Bool {
-                                
+
+                                // Handle folderId as optional
+                                let folderIdString = noteDict["folderId"] as? String // FolderId can be null
+
                                 let dateCreated = dateFormatter.date(from: dateCreatedString) ?? Date()
                                 let dateModified = dateFormatter.date(from: dateModifiedString) ?? Date()
 
@@ -210,8 +285,9 @@ struct Late_Night_NotesApp: App {
                                                 text: text,
                                                 dateCreated: dateCreated,
                                                 dateModified: dateModified,
-                                                highlighted: highlighted)
-                                
+                                                highlighted: highlighted,
+                                                folderId: folderIdString != nil ? UUID(uuidString: folderIdString!) ?? UUID() : nil)
+
                                 // Add the note to the array
                                 fetchedNotes.append(note)
                             } else {
@@ -239,8 +315,6 @@ struct Late_Night_NotesApp: App {
             }
         }
     }
-
-
 
 
 
