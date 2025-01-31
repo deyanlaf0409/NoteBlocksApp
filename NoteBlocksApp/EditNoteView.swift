@@ -17,15 +17,20 @@ struct EditNoteView: View {
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .padding()
             
-            
-            Picker("Select Folder", selection: $selectedFolderId) {
-                Text("None").tag(UUID?.none)
-                ForEach(noteStore.folders, id: \.id) { folder in
-                    Text(folder.name).tag(folder.id as UUID?)
+            HStack {
+                    Text("Folder:")
+                        .font(.body) // You can customize the font style here
+                    
+                    Picker("Select Folder", selection: $selectedFolderId) {
+                        Text("None").tag(UUID?.none)  // None option with a UUID?.none tag
+                        ForEach(noteStore.folders, id: \.id) { folder in
+                            Text(folder.name).tag(folder.id as UUID?)  // Folder option with UUID? tag
+                        }
+                    }
+                    .pickerStyle(MenuPickerStyle())
+                    .padding(.trailing) // Optional: add padding on the right if needed
                 }
-            }
-            .pickerStyle(MenuPickerStyle())
-
+                .padding(.horizontal)
 
             Button(action: { showingReminderSheet.toggle() }) {
                 HStack {
@@ -97,10 +102,10 @@ struct EditNoteView: View {
         note.text = editedText
         
         if let folderId = selectedFolderId {
-                    note.folderID = folderId
-                } else {
-                    note.folderID = nil
-                }
+            note.folderID = folderId
+        } else {
+            note.folderID = nil
+        }
         
         note.dateModified = Date()
         note.reminderDate = reminderDate
@@ -119,13 +124,11 @@ struct EditNoteView: View {
     }
 
     private func scheduleNotification(for note: Note, at date: Date) {
-        
         if note.isArchived {
-                // If the note is archived, don't show a notification
-                print("Note is archived, skipping notification.")
-                return
-            }
-        
+            print("Note is archived, skipping notification.")
+            return
+        }
+
         let content = UNMutableNotificationContent()
         content.title = "Reminder for your note"
         content.body = note.text
@@ -149,6 +152,7 @@ struct EditNoteView: View {
         }
     }
 }
+
 
 struct ReminderPicker: View {
     @Binding var reminderDate: Date?
