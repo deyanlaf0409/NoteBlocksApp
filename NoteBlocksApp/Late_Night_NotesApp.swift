@@ -85,15 +85,14 @@ struct Late_Night_NotesApp: App {
                                   let text = rawNote["text"] as? String,
                                   let dateCreatedString = rawNote["dateCreated"] as? String,
                                   let dateModifiedString = rawNote["dateModified"] as? String,
-                                  let highlightedString = rawNote["highlighted"] as? String,
-                                  let folderIdString = rawNote["folderId"] as? String else {
+                                  let highlightedString = rawNote["highlighted"] as? String else {
                                         return nil
                             }
 
                             let dateCreated = dateFormatter.date(from: dateCreatedString) ?? Date()
                             let dateModified = dateFormatter.date(from: dateModifiedString) ?? Date()
                             let highlighted = (highlightedString == "t")
-                            let folderId = UUID(uuidString: folderIdString) ?? UUID()
+                            let folderId: UUID? = (rawNote["folderId"] as? String).flatMap(UUID.init)
 
                             return Note(id: UUID(uuidString: idString) ?? UUID(),
                                         text: text,

@@ -24,7 +24,7 @@ struct Note: Identifiable, Codable {
         var hasReminder: Bool {
             reminderDate != nil
         }
-    var folderID: UUID?
+    var folderID: UUID? = nil
 
     // Default initializer for creating new notes
     init(text: String) {
@@ -34,7 +34,7 @@ struct Note: Identifiable, Codable {
         self.dateModified = Date()
         self.highlighted = false
         self.isArchived = false
-        self.folderID = UUID()
+        self.folderID = nil
     }
 
     // Custom initializer for decoding notes from deep links

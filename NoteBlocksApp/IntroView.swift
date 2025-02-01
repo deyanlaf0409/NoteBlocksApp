@@ -11,6 +11,8 @@ struct SafariView: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: SFSafariViewController, context: Context) {}
 }
 
+import SwiftUI
+
 struct IntroView: View {
     @Binding var loggedInUser: String?
     @Binding var showNotes: Bool
@@ -18,6 +20,9 @@ struct IntroView: View {
 
     @State private var ipAddress: String = "" // Default IP
     @State private var showIPInputModal: Bool = false
+    @State private var showNoConnectionAlert = false
+
+    @ObservedObject var networkMonitor = NetworkMonitor() // Use your existing NetworkMonitor
 
     var body: some View {
         NavigationStack {
@@ -27,7 +32,12 @@ struct IntroView: View {
                     .padding()
 
                 Button(action: {
-                    showIPInputModal = true
+                    // Check for internet connection before allowing login
+                    if networkMonitor.isConnected {
+                        showIPInputModal = true
+                    } else {
+                        showNoConnectionAlert = true
+                    }
                 }) {
                     Text("Log In")
                         .font(.system(size: 18, weight: .bold, design: .rounded))
@@ -77,7 +87,11 @@ struct IntroView: View {
             .navigationDestination(isPresented: $showNotes) {
                 ContentView(showSafari: .constant(false), username: loggedInUser ?? "Guest", onLogout: {})
             }
+            .alert(isPresented: $showNoConnectionAlert) {
+                Alert(title: Text("No Internet Connection"),
+                      message: Text("Please check your internet connection and try again."),
+                      dismissButton: .default(Text("OK")))
+            }
         }
     }
 }
-
