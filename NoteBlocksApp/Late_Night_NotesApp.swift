@@ -129,6 +129,7 @@ struct Late_Night_NotesApp: App {
                         
                         print("Merged notes: \(mergedNotes.map { $0.text })")
                         print("Merged folders: \(mergedFolders.map { $0.name })")
+                        
 
                         mergedNotes.forEach { note in
                             noteStore.addNoteOnServer(note: note, userId: userIdString) { result in
