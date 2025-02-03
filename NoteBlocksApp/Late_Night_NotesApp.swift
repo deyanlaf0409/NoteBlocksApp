@@ -130,6 +130,11 @@ struct Late_Night_NotesApp: App {
                         print("Merged notes: \(mergedNotes.map { $0.text })")
                         print("Merged folders: \(mergedFolders.map { $0.name })")
                         
+                        mergedFolders.forEach { folder in
+                                                noteStore.addFolderToServer(folder: folder, userId: userIdString)
+                                            }
+                        
+                        
 
                         mergedNotes.forEach { note in
                             noteStore.addNoteOnServer(note: note, userId: userIdString) { result in
@@ -141,10 +146,19 @@ struct Late_Night_NotesApp: App {
                                 }
                             }
                         }
+                        
+                        mergedNotes.forEach { note in
+                            noteStore.updateNoteOnServer(note: note) { result in
+                                switch result {
+                                case .success:
+                                    print("Saved note to server: \(note.text)")
+                                case .failure(let error):
+                                    print("Failed to save note to server: \(error.localizedDescription)")
+                                }
+                            }
+                        }
+                        
 
-                        mergedFolders.forEach { folder in
-                                                noteStore.addFolderToServer(folder: folder, userId: userIdString)
-                                            }
 
                         loggedInUser = username
                         showNotes = true

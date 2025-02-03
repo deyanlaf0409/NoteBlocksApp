@@ -371,7 +371,8 @@ class NoteStore: ObservableObject {
             "user_id": userId,               // Include userId
             "text": note.text,               // Note text
             "dateCreated": formattedDateCreated, // Include created date
-            "dateModified": formattedDateModified // Include modified date
+            "dateModified": formattedDateModified,
+            "folderId": note.folderID?.uuidString ?? ""
         ]
 
         // Print the JSON for debugging
