@@ -11,8 +11,6 @@ struct SafariView: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: SFSafariViewController, context: Context) {}
 }
 
-import SwiftUI
-
 struct IntroView: View {
     @Binding var loggedInUser: String?
     @Binding var showNotes: Bool
@@ -23,10 +21,17 @@ struct IntroView: View {
     @State private var showNoConnectionAlert = false
 
     @ObservedObject var networkMonitor = NetworkMonitor() // Use your existing NetworkMonitor
+    @Environment(\.colorScheme) var colorScheme  // Detect light/dark mode
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
+                // Image that switches based on the system's color scheme
+                Image(colorScheme == .dark ? "whitelogo" : "blacklogo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 100, height: 100)
+
                 Text("Welcome to NoteBlocks")
                     .font(.largeTitle)
                     .padding()
@@ -55,7 +60,7 @@ struct IntroView: View {
                         .cornerRadius(15)
                 }
                 .sheet(isPresented: $showIPInputModal) {
-                    IPInputView(ipAddress: $ipAddress)
+                    IPInputView()
                 }
 
                 Button(action: {
@@ -95,3 +100,4 @@ struct IntroView: View {
         }
     }
 }
+

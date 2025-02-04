@@ -16,8 +16,11 @@ struct FolderView: View {
         NavigationView {
             VStack {
                 TextField("New Folder Name", text: $newFolderName)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding()
+                    .padding(8)
+                    .background(RoundedRectangle(cornerRadius: 25).fill(Color(.systemGray6))) // Light background
+                    .padding(.horizontal, 8) // Keep consistent padding
+                    .padding(.top, 15)
+
 
                 Button(action: {
                     if !newFolderName.isEmpty {
@@ -57,8 +60,9 @@ struct FolderView: View {
                     .onDelete(perform: deleteFolder)
                 }
             }
-            .navigationTitle("Manage Folders")
+            
         }
+        .navigationTitle("Manage Folders")
     }
 
     // Function to handle folder deletion

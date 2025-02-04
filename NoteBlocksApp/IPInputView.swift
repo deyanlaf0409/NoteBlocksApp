@@ -3,79 +3,64 @@ import StoreKit
 import SafariServices
 
 struct IPInputView: View {
-    @Binding var ipAddress: String
     @State private var showSafariView = false
     @State private var isSubscribed = false
-    @State private var showSubscriptionPrompt = false
+
+    // Hardcoded IP address
+    let hardcodedIPAddress = "192.168.0.222" // Replace with your actual IP
 
     var body: some View {
         VStack {
-            Text("Enter Server IP Address")
+            Text("Discover More")
                 .font(.headline)
                 .padding()
 
-            TextField("IPv4 Address", text: $ipAddress)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding()
-
-            // Log In Button
-            Button("Log In") {
-                if !ipAddress.isEmpty {
+            // Conditional button (Start Subscription OR Sign In)
+            if isSubscribed {
+                // Sign In Button (Shown AFTER subscription)
+                Button("Sign In") {
                     checkSubscriptionStatus()
                 }
+                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .padding(.vertical, 10)
+                .padding(.horizontal, 14)
+                .frame(maxWidth: 200)
+                .background(Color.black)
+                .foregroundColor(.white)
+                .cornerRadius(15)
+            } else {
+                // Start Subscription Button (Shown BEFORE subscription)
+                Button("Let's Go") {
+                    startSubscription()
+                }
+                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .padding(.vertical, 12)  // slightly larger padding for better touch area
+                .padding(.horizontal, 20) // wider horizontal padding
+                .frame(maxWidth: 240)    // slightly wider button
+                .background(LinearGradient(gradient: Gradient(colors: [Color.purple, Color.purple]), startPoint: .topLeading, endPoint: .bottomTrailing))  // gradient background
+                .foregroundColor(.white)
+                .cornerRadius(25)  // smoother rounded corners
+                .shadow(color: Color.purple.opacity(0.5), radius: 10, x: 0, y: 4)  // subtle shadow for depth
             }
-            .font(.system(size: 18, weight: .bold, design: .rounded))
-            .padding(.vertical, 8)
-            .padding(.horizontal, 12)
-            .frame(maxWidth: 150)
-            .background(
-                LinearGradient(
-                    gradient: Gradient(colors: [Color.black, Color.black]),
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
-            )
-            .foregroundColor(.white)
-            .cornerRadius(15)
-            .disabled(!isSubscribed) // Disable the Log In button if not subscribed
 
             if !isSubscribed {
-                VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: 15) { // Increased spacing
                     Text("Why Go Premium?")
-                        .font(.title2) // Increased font size
+                        .font(.title2)
                         .bold()
-                        .padding(.bottom, 5)
+                        .padding(.bottom, 10)
 
-                    Text("• Unlimited cloud storage")
-                    Text("• 24/7 Priority support")
-                    Text("• Join a community full of people")
-                    Text("• Access to awesome new features")
-
-                    // Centering the "Start Subscription" button
-                    HStack {
-                        Spacer()
-                        Button("Start Subscription") {
-                            startSubscription()
-                        }
-                        .font(.system(size: 18, weight: .bold, design: .rounded))
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 12)
-                        .frame(maxWidth: 150)
-                        .background(
-                            LinearGradient(
-                                gradient: Gradient(colors: [Color.green, Color.green]),
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .foregroundColor(.white)
-                        .cornerRadius(15)
-                        Spacer()
-                    }
-                    .padding(.top, 10)
+                    featureRow(icon: "icloud.and.arrow.up", text: "Unlimited cloud storage")
+                    featureRow(icon: "arrow.triangle.2.circlepath", text: "24/7 Synchronization and backup")
+                    featureRow(icon: "message", text: "Priority support")
+                    featureRow(icon: "desktopcomputer", text: "Accessible from any device")
+                    featureRow(icon: "nosign", text: "No ads or interruptions")
+                    featureRow(icon: "paperplane", text: "Fast send to friends or team members")
+                    //featureRow(icon: "person.3", text: "Join a community full of people")
+                    featureRow(icon: "sparkles", text: "Access to every new feature")
                 }
                 .padding(.horizontal)
-                .padding(.top, 20) // Add some space between Log In button and this section
+                .padding(.top, 25)
             }
 
             Spacer()
@@ -84,32 +69,37 @@ struct IPInputView: View {
         .onAppear {
             checkSubscriptionStatus()
         }
-        .onChange(of: isSubscribed) { oldValue, newValue in
+        .onChange(of: isSubscribed) { _, newValue in
             UserDefaults.standard.set(newValue, forKey: "isSubscribed")
-            if newValue {
-                ipAddress = ""
-            }
         }
         .sheet(isPresented: $showSafariView) {
-            if let url = URL(string: "http://\(ipAddress)/project/Login/construct.php?AppRequest=true") {
+            if let url = URL(string: "http://\(hardcodedIPAddress)/project/Login/construct.php?AppRequest=true") {
                 SafariView(url: url)
             }
         }
     }
 
-    // Function to check subscription status
-    private func checkSubscriptionStatus() {
-            if isSubscribed {
-                showSafariView = true
-            } else {
-                showSubscriptionPrompt = true
-            }
-        }
-
-    // Function to initiate subscription process
-    private func startSubscription() {
-            isSubscribed = true
+    // Helper function for feature rows
+    private func featureRow(icon: String, text: String) -> some View {
+        HStack(spacing: 12) { // Added spacing between icon and text
+            Image(systemName: icon)
+                .foregroundColor(.blue)
+                .font(.system(size: 22)) // Increased icon size
+            Text(text)
+                .font(.system(size: 18, weight: .medium)) // Increased text size
         }
     }
 
+    // Function to check subscription status
+    private func checkSubscriptionStatus() {
+        if isSubscribed {
+            showSafariView = true
+        }
+    }
+
+    // Function to initiate subscription process
+    private func startSubscription() {
+        isSubscribed = true
+    }
+}
 

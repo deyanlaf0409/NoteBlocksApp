@@ -3,6 +3,8 @@ import SwiftUI
 struct ContentView: View {
     @ObservedObject var noteStore = NoteStore()
     @EnvironmentObject var networkMonitor: NetworkMonitor
+    @Environment(\.colorScheme) var colorScheme
+    
     @State private var newNoteText = ""
     @State private var searchText = ""
     @State private var showAlert = false
@@ -156,7 +158,7 @@ struct ContentView: View {
                                         .background(Color.clear) // Transparent background
                                     }
                                     .sheet(isPresented: $showIPInputModal) {
-                                        IPInputView(ipAddress: $ipAddress)
+                                        IPInputView()
                                     }
 
                                 }
@@ -170,9 +172,9 @@ struct ContentView: View {
                                     Image(systemName: "magnifyingglass")
                                         .foregroundColor(.gray)
 
-                                    TextField("Search notes", text: $searchText)
+                                    TextField("Search block", text: $searchText)
                                         .foregroundColor(.primary)
-                                        .padding(8)
+                                        .padding(5)
                                 }
                                 .padding(3)
                                 .background(RoundedRectangle(cornerRadius: 25).fill(Color(.systemGray6)))
@@ -221,9 +223,9 @@ struct ContentView: View {
                                     Image(systemName: "cube.box")
                                         .foregroundColor(.gray)
 
-                                    TextField("Enter new Block", text: $newNoteText)
+                                    TextField("Enter new block", text: $newNoteText)
                                         .foregroundColor(.primary)
-                                        .padding(8)
+                                        .padding(5)
                                 }
                                 .padding(3)
                                 .background(RoundedRectangle(cornerRadius: 25).fill(Color(.systemGray6)))
@@ -238,11 +240,20 @@ struct ContentView: View {
                                         noteStore.loadNotes()
                                     }
                                 }) {
-                                    Image(systemName: "plus.circle.fill")
-                                        .font(.system(size: 30))
-                                        .foregroundColor(.blue)
+                                    Circle()
+                                        .fill(
+                                            LinearGradient(gradient: Gradient(colors: [Color.purple, Color.purple]), startPoint: .topLeading, endPoint: .bottomTrailing)
+                                        )
+                                        .frame(width: 35, height: 35)  // Adjust size of the circle
+                                        .overlay(
+                                            Image(systemName: "plus")
+                                                .font(.system(size: 25, weight: .bold))  // Set the icon size
+                                                .foregroundColor(colorScheme == .dark ? .black : .white))  // Set the icon color to white
+                                    
+                                        .shadow(color: Color.purple.opacity(0.5), radius: 10, x: 0, y: 4)  // Add subtle shadow for depth
                                 }
-                                .padding(4)
+                                .padding(4)  // Adjust padding as needed
+
 
                                 Spacer() // Push buttons to the right
                             }
@@ -320,7 +331,7 @@ struct ContentView: View {
                             secondaryButton: .cancel()
                         )
                     }
-                    .navigationTitle("Notes")
+                    .navigationTitle("Home")
                     .navigationBarItems(trailing: EditButton())
                 }
             }
