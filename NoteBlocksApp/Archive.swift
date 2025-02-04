@@ -25,7 +25,7 @@ struct ArchiveView: View {
                     Button(action: {
                         showDeleteConfirmation = true // Show confirmation alert
                     }) {
-                        Image(systemName: "trash") // Trash icon
+                        Text("Delete All")
                             .foregroundColor(.blue)
                     }
                 }

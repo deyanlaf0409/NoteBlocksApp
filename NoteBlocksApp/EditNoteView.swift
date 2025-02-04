@@ -79,7 +79,7 @@ struct EditNoteView: View {
                     .padding()
                     .background(Color.black)
                     .foregroundColor(.white)
-                    .cornerRadius(8)
+                    .cornerRadius(15)
             }
             .padding()
 

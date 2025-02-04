@@ -105,123 +105,150 @@ struct ContentView: View {
                         VStack {
                             HStack {
                                 NavigationLink(destination: ArchiveView(noteStore: noteStore)) {
-                                    Text("Archive")
-                                        .font(.system(size: 18, weight: .bold, design: .rounded))
-                                        .padding(.vertical, 8)
-                                        .padding(.horizontal, 12)
-                                        .frame(maxWidth: 150)
-                                        .background(
-                                            LinearGradient(
-                                                gradient: Gradient(colors: [Color.black, Color.black]),
-                                                startPoint: .leading,
-                                                endPoint: .trailing
-                                            )
-                                        )
-                                        .foregroundColor(.white)
-                                        .cornerRadius(15)
+                                    VStack {
+                                        Image(systemName: "archivebox") // SF Symbol for archive
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 50, height: 50) // Adjust size as needed
+                                            .foregroundColor(Color.primary)
+
+                                        Text("Archive")
+                                            .font(.system(size: 14, weight: .bold, design: .rounded))
+                                            .foregroundColor(Color.primary)
+                                    }
+                                    .frame(width: 80, height: 80) // Square shape
+                                    .background(Color.clear) // Transparent background
                                 }
                                 
                                 NavigationLink(destination: FolderView().environmentObject(noteStore)) {
+                                    VStack {
+                                        Image(systemName: "folder") // SF Symbol for folders
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 50, height: 50)
+                                            .foregroundColor(Color.primary) // Adapts to light/dark mode
+
                                         Text("Folders")
-                                            .font(.system(size: 18, weight: .bold, design: .rounded))
-                                            .padding(.vertical, 8)
-                                            .padding(.horizontal, 12)
-                                            .frame(maxWidth: 150)
-                                            .background(
-                                                LinearGradient(
-                                                    gradient: Gradient(colors: [Color.black, Color.black]),
-                                                    startPoint: .leading,
-                                                    endPoint: .trailing
-                                                )
-                                            )
-                                            .foregroundColor(.white)
-                                            .cornerRadius(15)
+                                            .font(.system(size: 14, weight: .bold, design: .rounded))
+                                            .foregroundColor(Color.primary) // Adapts to light/dark mode
                                     }
+                                    .frame(width: 80, height: 80) // Square shape
+                                    .background(Color.clear) // Transparent background
+                                }
+
 
                                 if username == "Guest" {
                                     Button(action: {
                                         showIPInputModal = true
                                     }) {
-                                        Text("Log In")
-                                            .font(.system(size: 18, weight: .bold, design: .rounded))
-                                            .padding(.vertical, 8)
-                                            .padding(.horizontal, 12)
-                                            .frame(maxWidth: 150)
-                                            .background(
-                                                LinearGradient(
-                                                    gradient: Gradient(colors: [Color.black, Color.black]),
-                                                    startPoint: .leading,
-                                                    endPoint: .trailing
-                                                )
-                                            )
-                                            .foregroundColor(.white)
-                                            .cornerRadius(15)
+                                        VStack {
+                                            Image(systemName: "person.crop.circle") // Replace with desired SF Symbol
+                                                .resizable()
+                                                .scaledToFit()
+                                                .frame(width: 50, height: 50) // Adjust size as needed
+                                                .foregroundColor(Color.primary)
+
+                                            Text("Log In")
+                                                .font(.system(size: 14, weight: .bold, design: .rounded))
+                                                .foregroundColor(Color.primary)
+                                        }
+                                        .frame(width: 80, height: 80) // Makes the button square
+                                        .background(Color.clear) // Transparent background
                                     }
                                     .sheet(isPresented: $showIPInputModal) {
                                         IPInputView(ipAddress: $ipAddress)
                                     }
+
                                 }
                             }
                         }
 
-                        HStack {
-                            TextField("Search notes", text: $searchText)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .padding()
+                        VStack(spacing: 10) { // Reduce space between elements
+                            HStack {
+                                // Search Notes TextField
+                                HStack {
+                                    Image(systemName: "magnifyingglass")
+                                        .foregroundColor(.gray)
 
-                            Menu {
-                                Button(action: {
-                                    selectedSearchCriteria = .text
-                                }) {
-                                    HStack {
-                                        Text("Search by Text")
-                                        if selectedSearchCriteria == .text {
-                                            Image(systemName: "checkmark")
+                                    TextField("Search notes", text: $searchText)
+                                        .foregroundColor(.primary)
+                                        .padding(8)
+                                }
+                                .padding(3)
+                                .background(RoundedRectangle(cornerRadius: 25).fill(Color(.systemGray6)))
+                                .padding(.horizontal, 10)
+
+                                // Three dots button
+                                Menu {
+                                    Button(action: {
+                                        selectedSearchCriteria = .text
+                                    }) {
+                                        HStack {
+                                            Text("Search by Text")
+                                            if selectedSearchCriteria == .text {
+                                                Image(systemName: "checkmark")
+                                            }
                                         }
                                     }
-                                }
-                                Button(action: {
-                                    selectedSearchCriteria = .date
-                                }) {
-                                    HStack {
-                                        Text("Search by Date")
-                                        if selectedSearchCriteria == .date {
-                                            Image(systemName: "checkmark")
+                                    Button(action: {
+                                        selectedSearchCriteria = .date
+                                    }) {
+                                        HStack {
+                                            Text("Search by Date")
+                                            if selectedSearchCriteria == .date {
+                                                Image(systemName: "checkmark")
+                                            }
                                         }
                                     }
+                                } label: {
+                                    ZStack {
+                                        Image(systemName: "circle.fill")
+                                            .font(.system(size: 30))
+                                            .foregroundColor(.black)
+                                        Image(systemName: "ellipsis")
+                                            .font(.system(size: 18))
+                                            .foregroundColor(.white)
+                                    }
+                                    .padding(4)
                                 }
-                            } label: {
-                                ZStack {
-                                    Image(systemName: "circle.fill")
+                                
+                                Spacer() // Push buttons to the right
+                            }
+
+                            HStack {
+                                // Enter new block TextField
+                                HStack {
+                                    Image(systemName: "cube.box")
+                                        .foregroundColor(.gray)
+
+                                    TextField("Enter new Block", text: $newNoteText)
+                                        .foregroundColor(.primary)
+                                        .padding(8)
+                                }
+                                .padding(3)
+                                .background(RoundedRectangle(cornerRadius: 25).fill(Color(.systemGray6)))
+                                .padding(.horizontal, 10)
+
+                                // Plus button to add new note
+                                Button(action: {
+                                    if !newNoteText.isEmpty {
+                                        noteStore.addNote(newNoteText)
+                                        newNoteText = ""
+                                        dismissKeyboard()
+                                        noteStore.loadNotes()
+                                    }
+                                }) {
+                                    Image(systemName: "plus.circle.fill")
                                         .font(.system(size: 30))
-                                        .foregroundColor(.black)
-                                    Image(systemName: "ellipsis")
-                                        .font(.system(size: 18))
-                                        .foregroundColor(.white)
+                                        .foregroundColor(.blue)
                                 }
-                                .padding()
+                                .padding(4)
+
+                                Spacer() // Push buttons to the right
                             }
                         }
 
-                        HStack {
-                            TextField("Enter new note", text: $newNoteText)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .padding()
 
-                            Button(action: {
-                                if !newNoteText.isEmpty {
-                                    noteStore.addNote(newNoteText)
-                                    newNoteText = ""
-                                    dismissKeyboard()
-                                    noteStore.loadNotes()
-                                }
-                            }) {
-                                Image(systemName: "plus.circle.fill")
-                                    .font(.system(size: 30))
-                                    .foregroundColor(.blue)
-                            }
-                            .padding()
-                        }
 
                         ZStack {
                             if filteredNotes.isEmpty {

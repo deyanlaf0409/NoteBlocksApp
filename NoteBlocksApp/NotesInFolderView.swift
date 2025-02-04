@@ -35,7 +35,7 @@ struct NotesInFolderView: View {
                 }) {
                     Image(systemName: isEditing ? "checkmark.circle.fill" : "pencil.circle.fill")
                         .font(.system(size: 24))
-                        .foregroundColor(.blue)
+                        .foregroundColor(Color.primary)
                 }
                 .padding(.trailing)
             }

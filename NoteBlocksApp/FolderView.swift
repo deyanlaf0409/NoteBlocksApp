@@ -28,12 +28,12 @@ struct FolderView: View {
                         folderListUpdated.toggle()  // Trigger a view update
                     }
                 }) {
-                    Text("Add Folder")
+                    Text("+ Add Folder")
                         .font(.system(size: 18, weight: .bold, design: .rounded))
                         .padding()
                         .background(Color.black)
                         .foregroundColor(.white)
-                        .cornerRadius(8)
+                        .cornerRadius(15)
                 }
                 .padding()
 
