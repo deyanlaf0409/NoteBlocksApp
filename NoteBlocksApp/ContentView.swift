@@ -296,13 +296,23 @@ struct ContentView: View {
                                                 }
 
                                                 Spacer()
+
+                                                // Check if the note has a reminder
                                                 if note.hasReminder {
                                                     Image(systemName: "clock")
                                                         .foregroundColor(.blue)
                                                 }
+
+                                                // Check if the note is highlighted
                                                 if note.highlighted {
                                                     Image(systemName: "star.fill")
                                                         .foregroundColor(.yellow)
+                                                }
+
+                                                // Check if the note is locked
+                                                if note.locked {
+                                                    Image(systemName: "lock.fill")
+                                                        .foregroundColor(.gray) // or any color to indicate locked state
                                                 }
                                             }
                                             .padding(.vertical, 8)

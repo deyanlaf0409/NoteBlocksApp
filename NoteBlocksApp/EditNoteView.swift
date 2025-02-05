@@ -1,5 +1,6 @@
 import SwiftUI
 import UserNotifications
+import LocalAuthentication
 
 struct EditNoteView: View {
     @Binding var note: Note
@@ -61,6 +62,21 @@ struct EditNoteView: View {
                 .foregroundColor(.white)
                 .cornerRadius(8)
             }
+            
+            Button(action: toggleLock) {
+                HStack {
+                    Image(systemName: note.locked ? "lock.fill" : "lock")
+                        .foregroundColor(note.locked ? .yellow : .gray)
+                        .font(.system(size: 24))
+                    Text(note.locked ? "Unlock" : "Lock")
+                        .foregroundColor(Color.primary)
+                }
+            }
+            .padding()
+            
+            
+            
+
 
             Button(action: toggleHighlight) {
                 HStack {
@@ -87,12 +103,29 @@ struct EditNoteView: View {
         }
         .navigationTitle("Edit Note")
         .onAppear {
-            editedText = note.text
-            reminderDate = note.reminderDate // Restore reminder date
-            noteStore.loadFolders()
-            selectedFolderId = note.folderID
-            print("Folders in picker: \(noteStore.folders)")
+            if note.locked {
+                // Ask for authentication if the note is locked
+                authenticateUser { success in
+                    if success {
+                        // Authentication succeeded, allow access to the note
+                        editedText = note.text
+                        reminderDate = note.reminderDate
+                        noteStore.loadFolders()
+                        selectedFolderId = note.folderID
+                    } else {
+                        // If authentication fails, exit or show an error
+                        presentationMode.wrappedValue.dismiss() // Or show an alert
+                    }
+                }
+            } else {
+                // If the note is not locked, proceed as usual
+                editedText = note.text
+                reminderDate = note.reminderDate
+                noteStore.loadFolders()
+                selectedFolderId = note.folderID
+            }
         }
+
         .sheet(isPresented: $showingReminderSheet) {
             ReminderPicker(reminderDate: $reminderDate)
         }
@@ -117,6 +150,24 @@ struct EditNoteView: View {
 
         presentationMode.wrappedValue.dismiss()
     }
+    
+    private func toggleLock() {
+        if note.locked {
+            // If already locked, unlock it (no need for authentication)
+            note.locked = false
+        } else {
+            // If not locked, authenticate the user to lock it
+            authenticateUser { success in
+                if success {
+                    note.locked = true
+                } else {
+                    // If authentication failed, show an alert or feedback
+                    print("Authentication failed!")
+                }
+            }
+        }
+    }
+
 
     private func toggleHighlight() {
         noteStore.toggleHighlight(note)
@@ -207,3 +258,27 @@ private let dateFormatter: DateFormatter = {
     formatter.timeStyle = .short
     return formatter
 }()
+
+private func authenticateUser(completion: @escaping (Bool) -> Void) {
+    let context = LAContext()
+    var error: NSError?
+
+    // Check if Face ID or Touch ID is available
+    if context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
+        context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "Please authenticate to lock the note") { success, authenticationError in
+            DispatchQueue.main.async {
+                if success {
+                    completion(true)
+                } else {
+                    completion(false)
+                    // Handle authentication failure (e.g., alert the user)
+                    print(authenticationError?.localizedDescription ?? "Authentication failed")
+                }
+            }
+        }
+    } else {
+        // Handle error if biometrics are not available
+        completion(false)
+        print(error?.localizedDescription ?? "Biometrics not available")
+    }
+}

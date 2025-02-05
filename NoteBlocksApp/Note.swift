@@ -25,6 +25,7 @@ struct Note: Identifiable, Codable {
             reminderDate != nil
         }
     var folderID: UUID? = nil
+    var locked: Bool = false
 
     // Default initializer for creating new notes
     init(text: String) {
