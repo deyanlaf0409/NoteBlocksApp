@@ -16,7 +16,7 @@ struct Late_Night_NotesApp: App {
     var body: some Scene {
         WindowGroup {
             if showNotes {
-                ContentView(showSafari: $showSafari, username: loggedInUser ?? "Guest", onLogout: resetToInitialState)
+                ContentView(username: loggedInUser ?? "Guest", onLogout: resetToInitialState)
                     .environmentObject(noteStore)
                     .environmentObject(networkMonitor)
                     .onOpenURL { url in

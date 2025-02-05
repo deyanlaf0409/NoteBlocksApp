@@ -90,7 +90,7 @@ struct IntroView: View {
             }
             .padding()
             .navigationDestination(isPresented: $showNotes) {
-                ContentView(showSafari: .constant(false), username: loggedInUser ?? "Guest", onLogout: {})
+                ContentView(username: loggedInUser ?? "Guest", onLogout: {})
             }
             .alert(isPresented: $showNoConnectionAlert) {
                 Alert(title: Text("No Internet Connection"),
