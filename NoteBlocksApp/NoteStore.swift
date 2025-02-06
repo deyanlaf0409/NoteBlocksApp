@@ -427,7 +427,8 @@ class NoteStore: ObservableObject {
             "text": note.text,
             "dateModified": formattedDate,
             "highlight": note.highlighted,
-            "folderId": note.folderID?.uuidString ?? ""
+            "folderId": note.folderID?.uuidString ?? "",
+            "locked": note.locked
         ]
 
         do {

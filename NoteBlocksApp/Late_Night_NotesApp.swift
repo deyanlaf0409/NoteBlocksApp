@@ -23,7 +23,7 @@ struct Late_Night_NotesApp: App {
                         handleDeepLink(url: url)
                     }
                     .onAppear {
-                        let dummyNote = Note(id: UUID(), text: "Test Note", dateCreated: Date(), dateModified: Date(), highlighted: false, folderId: nil)
+                        let dummyNote = Note(id: UUID(), text: "Test Note", dateCreated: Date(), dateModified: Date(), highlighted: false, folderId: nil, locked: false)
                         let userId = "12345"
 
                         noteStore.addNoteOnServer(note: dummyNote, userId: userId) { result in
@@ -85,13 +85,15 @@ struct Late_Night_NotesApp: App {
                                   let text = rawNote["text"] as? String,
                                   let dateCreatedString = rawNote["dateCreated"] as? String,
                                   let dateModifiedString = rawNote["dateModified"] as? String,
-                                  let highlightedString = rawNote["highlighted"] as? String else {
+                                  let highlightedString = rawNote["highlighted"] as? String,
+                                  let lockedString = rawNote["locked"] as? String else {
                                         return nil
                             }
 
                             let dateCreated = dateFormatter.date(from: dateCreatedString) ?? Date()
                             let dateModified = dateFormatter.date(from: dateModifiedString) ?? Date()
                             let highlighted = (highlightedString == "t")
+                            let locked = (lockedString == "t")
                             let folderId: UUID? = (rawNote["folderId"] as? String).flatMap(UUID.init)
 
                             return Note(id: UUID(uuidString: idString) ?? UUID(),
@@ -99,7 +101,8 @@ struct Late_Night_NotesApp: App {
                                         dateCreated: dateCreated,
                                         dateModified: dateModified,
                                         highlighted: highlighted,
-                                        folderId: folderId)
+                                        folderId: folderId,
+                                        locked: locked)
 
                         } ?? []
 
@@ -286,6 +289,7 @@ struct Late_Night_NotesApp: App {
                                let text = noteDict["text"] as? String,
                                let dateCreatedString = noteDict["dateCreated"] as? String,
                                let dateModifiedString = noteDict["dateModified"] as? String,
+                               let locked = noteDict["locked"] as? Bool,
                                let highlighted = noteDict["highlighted"] as? Bool {
 
                                 // Handle folderId as optional
@@ -300,7 +304,9 @@ struct Late_Night_NotesApp: App {
                                                 dateCreated: dateCreated,
                                                 dateModified: dateModified,
                                                 highlighted: highlighted,
-                                                folderId: folderIdString != nil ? UUID(uuidString: folderIdString!) ?? UUID() : nil)
+                                                folderId: folderIdString != nil ? UUID(uuidString: folderIdString!) ?? UUID() : nil,
+                                                locked: locked)
+                                                
 
                                 // Add the note to the array
                                 fetchedNotes.append(note)

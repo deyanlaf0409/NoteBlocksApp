@@ -36,10 +36,11 @@ struct Note: Identifiable, Codable {
         self.highlighted = false
         self.isArchived = false
         self.folderID = nil
+        self.locked = false
     }
 
     // Custom initializer for decoding notes from deep links
-    init(id: UUID, text: String, dateCreated: Date, dateModified: Date, highlighted: Bool, folderId: UUID?) {
+    init(id: UUID, text: String, dateCreated: Date, dateModified: Date, highlighted: Bool, folderId: UUID?, locked: Bool) {
         self.id = id
         self.text = text
         self.dateCreated = dateCreated
@@ -47,6 +48,7 @@ struct Note: Identifiable, Codable {
         self.highlighted = highlighted
         self.isArchived = false
         self.folderID = folderId
+        self.locked = locked
     }
 }
 
