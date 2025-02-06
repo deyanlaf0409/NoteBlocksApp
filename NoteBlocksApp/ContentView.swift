@@ -289,14 +289,14 @@ struct ContentView: View {
             }
         }) {
             Circle()
-                .fill(LinearGradient(gradient: Gradient(colors: [Color.purple, Color.purple]), startPoint: .topLeading, endPoint: .bottomTrailing))
+                .fill(LinearGradient(gradient: Gradient(colors: [Color.blue, Color.cyan]), startPoint: .topLeading, endPoint: .bottomTrailing))
                 .frame(width: 35, height: 35)
                 .overlay(
                     Image(systemName: "plus")
                         .font(.system(size: 25, weight: .bold))
                         .foregroundColor(colorScheme == .dark ? .black : .white)
                 )
-                .shadow(color: Color.purple.opacity(0.5), radius: 10, x: 0, y: 4)
+                .shadow(color: Color.blue.opacity(0.5), radius: 10, x: 0, y: 4)
         }
         .padding(4)
     }
@@ -325,19 +325,21 @@ struct ContentView: View {
 
     private func noteRow(note: Note) -> some View {
         ZStack {
+            // NavigationLink that directly passes a binding to the note
             NavigationLink(destination: EditNoteView(note: $noteStore.notes[noteStore.notes.firstIndex(where: { $0.id == note.id })!])) {
-                EmptyView()
+                EmptyView()  // Empty view to trigger navigation
             }
-            .opacity(0)
-
+            .opacity(0)  // Make it invisible, but still active
+            
             HStack {
                 noteInfo(note: note)
                 noteIcons(note: note)
             }
             .padding(.vertical, 8)
         }
-        .contentShape(Rectangle())
+        .contentShape(Rectangle())  // Make the whole row tappable
     }
+
 
     private func noteInfo(note: Note) -> some View {
         VStack(alignment: .leading) {

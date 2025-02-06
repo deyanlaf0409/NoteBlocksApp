@@ -45,7 +45,7 @@ struct FolderView: View {
                         NavigationLink(destination: NotesInFolderView(folder: folder)) {
                             HStack {
                                 Image(systemName: "folder.fill") // Use the folder icon
-                                    .foregroundColor(.blue) // Adjust color as desired
+                                    .foregroundColor(.primary) // Adjust color as desired
                                 Text(folder.name)
                                 
                                 

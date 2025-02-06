@@ -65,10 +65,10 @@ struct EditNoteView: View {
             
             Button(action: toggleLock) {
                 HStack {
-                    Image(systemName: note.locked ? "lock.fill" : "lock")
+                    Image(systemName: note.locked ? "lock.fill" : "lock.open")
                         .foregroundColor(note.locked ? .yellow : .gray)
                         .font(.system(size: 24))
-                    Text(note.locked ? "Unlock" : "Lock")
+                    Text(note.locked ? "Locked" : "Unlocked")
                         .foregroundColor(Color.primary)
                 }
             }

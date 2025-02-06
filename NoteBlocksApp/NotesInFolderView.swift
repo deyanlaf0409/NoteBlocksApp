@@ -35,7 +35,7 @@ struct NotesInFolderView: View {
                 }) {
                     Image(systemName: isEditing ? "checkmark.circle.fill" : "pencil.circle.fill")
                         .font(.system(size: 24))
-                        .foregroundColor(Color.primary)
+                        .foregroundColor(isEditing ? .blue : .yellow)  // Set blue for checkmark, yellow for pencil
                 }
                 .padding(.trailing)
             }
@@ -43,12 +43,15 @@ struct NotesInFolderView: View {
             // Folder notes list
             List {
                 ForEach(noteStore.notes.filter { $0.folderID == folder.id }) { note in
-                    VStack(alignment: .leading) {
-                        Text(note.text)
-                            .font(.headline)
-                        Text("Last Modified: \(note.dateModified.formatted())")
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
+                    // Pass the note as a binding to the EditNoteView
+                    NavigationLink(destination: EditNoteView(note: $noteStore.notes[noteStore.notes.firstIndex(where: { $0.id == note.id })!])) {
+                        VStack(alignment: .leading) {
+                            Text(note.text)
+                                .font(.headline)
+                            Text("Last Modified: \(note.dateModified.formatted())")
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                        }
                     }
                 }
             }
@@ -83,5 +86,8 @@ struct NotesInFolderView: View {
         noteStore.loadFolders()
     }
 }
+
+
+
 
 
