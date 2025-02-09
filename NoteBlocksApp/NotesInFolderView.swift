@@ -18,9 +18,19 @@ struct NotesInFolderView: View {
             HStack {
                 // Folder name as Text or TextField depending on editing mode
                 if isEditing {
-                    TextField("New Folder Name", text: $newFolderName)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .padding()
+                    HStack {
+                        Image(systemName: "pencil")
+                            .foregroundColor(.gray)
+                        
+                        TextField("New Folder Name", text: $newFolderName)
+                            .foregroundColor(.primary)
+                            .padding(5)
+                        
+                    }
+                    .padding(3)
+                    .background(RoundedRectangle(cornerRadius: 25).fill(Color(.systemGray6)))
+                    .padding(.horizontal, 10)
+       
                 } else {
                     Text(folder.name)
                         .font(.title)
@@ -51,6 +61,11 @@ struct NotesInFolderView: View {
                             Text("Last Modified: \(note.dateModified.formatted())")
                                 .font(.subheadline)
                                 .foregroundColor(.gray)
+                            
+                            if note.locked {
+                                Image(systemName: "lock.fill")
+                                    .foregroundColor(.gray)
+                            }
                         }
                     }
                 }

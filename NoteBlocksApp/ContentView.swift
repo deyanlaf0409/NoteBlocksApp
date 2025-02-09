@@ -289,14 +289,14 @@ struct ContentView: View {
             }
         }) {
             Circle()
-                .fill(LinearGradient(gradient: Gradient(colors: [Color.blue, Color.blue]), startPoint: .topLeading, endPoint: .bottomTrailing))
+                .fill(LinearGradient(gradient: Gradient(colors: [Color.orange, Color.orange]), startPoint: .topLeading, endPoint: .bottomTrailing))
                 .frame(width: 35, height: 35)
                 .overlay(
                     Image(systemName: "plus")
                         .font(.system(size: 25, weight: .bold))
                         .foregroundColor(colorScheme == .dark ? .black : .white)
                 )
-                .shadow(color: Color.blue.opacity(0.5), radius: 10, x: 0, y: 4)
+                .shadow(color: Color.orange.opacity(0.5), radius: 5, x: 0, y: 2)
         }
         .padding(4)
     }

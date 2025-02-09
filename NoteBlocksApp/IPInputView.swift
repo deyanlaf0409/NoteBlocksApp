@@ -101,10 +101,11 @@ struct IPInputView: View {
                         .padding(.bottom, 10)
 
                     FeatureRow(icon: "paperplane", text: "Fast send to all your friends and team members", iconColor: .primary)
-                    FeatureRow(icon: "globe", text: "Access to the NoteBlocks Network", iconColor: .primary)
+                    FeatureRow(icon: "person.3", text: "Access to the NoteBlocks community", iconColor: .primary)
                     FeatureRow(icon: "nosign", text: "No ads or interruptions", iconColor: .primary)
                     FeatureRow(icon: "desktopcomputer", text: "Accessible from any device", iconColor: .primary)
                     FeatureRow(icon: "icloud.and.arrow.up", text: "Unlimited cloud storage", iconColor: .primary)
+                    FeatureRow(icon: "infinity", text: "Unlimited account number", iconColor: .primary)
                     FeatureRow(icon: "arrow.triangle.2.circlepath", text: "24/7 Synchronization and backup", iconColor: .primary)
                     FeatureRow(icon: "message", text: "Priority support", iconColor: .primary)
                     FeatureRow(icon: "sparkles", text: "Access to every new feature", iconColor: .yellow)

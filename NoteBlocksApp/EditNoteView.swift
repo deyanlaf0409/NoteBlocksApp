@@ -14,9 +14,18 @@ struct EditNoteView: View {
 
     var body: some View {
         VStack {
-            TextField("Edit note", text: $editedText)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding()
+            HStack {
+                
+                Image(systemName: "pencil")
+                    .foregroundColor(.gray)
+                
+                TextField("Rename block", text: $editedText)
+                    .foregroundColor(.primary)
+                    .padding(5)
+            }
+            .padding(3)
+            .background(RoundedRectangle(cornerRadius: 25).fill(Color(.systemGray6)))
+            .padding(.horizontal, 10)
             
             HStack {
                     Text("Folder:")
@@ -101,7 +110,7 @@ struct EditNoteView: View {
 
             Spacer()
         }
-        .navigationTitle("Edit Note")
+        .navigationTitle("View Block")
         .onAppear {
             if note.locked {
                 // Ask for authentication if the note is locked
