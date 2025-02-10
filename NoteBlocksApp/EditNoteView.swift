@@ -45,7 +45,7 @@ struct EditNoteView: View {
             Button(action: { showingReminderSheet.toggle() }) {
                 HStack {
                     Image(systemName: "calendar.badge.clock")
-                        .foregroundColor(.blue)
+                        .foregroundColor(.orange)
                         .font(.system(size: 24))
                     Text("Set Reminder")
                         .foregroundColor(.primary)

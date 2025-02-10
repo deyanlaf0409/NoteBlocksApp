@@ -31,7 +31,7 @@ struct FolderView: View {
                         folderListUpdated.toggle()  // Trigger a view update
                     }
                 }) {
-                    Text("+ Add Folder")
+                    Text("+ 📁 Add Folder")
                         .font(.system(size: 18, weight: .bold, design: .rounded))
                         .padding()
                         .background(Color.black)
@@ -52,7 +52,7 @@ struct FolderView: View {
                                 let noteCount = noteStore.notes.filter { $0.folderID == folder.id }.count
                                 Text("\(noteCount)")
                                     .font(.body)
-                                    .foregroundColor(.blue)
+                                    .foregroundColor(.orange)
                                 Spacer()
                             }
                         }
