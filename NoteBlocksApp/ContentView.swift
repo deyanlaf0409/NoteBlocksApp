@@ -11,6 +11,7 @@ struct ContentView: View {
     @State private var selectedSearchCriteria: SearchCriteria = .text
     @State private var ipAddress = ""
     @State private var showIPInputModal = false
+    @State private var showProfileModal = false
     @State private var showLogoutConfirmation = false
 
     let username: String
@@ -149,10 +150,13 @@ struct ContentView: View {
 
                 if username == "Guest" {
                     logInButton
+                } else {
+                    profileButton
                 }
             }
         }
     }
+
 
     private func navigationButton(icon: String, label: String) -> some View {
         VStack {
@@ -169,6 +173,31 @@ struct ContentView: View {
         .frame(width: 80, height: 80)
         .background(Color.clear)
     }
+    
+    private var profileButton: some View {
+        Button(action: {
+            showProfileModal = true // Trigger the modal when tapped
+        }) {
+            VStack {
+                Image(systemName: "person.crop.circle")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 50, height: 50)
+                    .foregroundColor(Color.primary)
+
+                Text("Profile")
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                    .foregroundColor(Color.primary)
+            }
+            .frame(width: 80, height: 80)
+            .background(Color.clear)
+        }
+        .sheet(isPresented: $showProfileModal) {
+            ProfileView(username: username)
+            .transition(.move(edge: .bottom))
+        }
+    }
+
 
     private var logInButton: some View {
         Button(action: {
@@ -296,7 +325,7 @@ struct ContentView: View {
                         .font(.system(size: 25, weight: .bold))
                         .foregroundColor(colorScheme == .dark ? .black : .white)
                 )
-                .shadow(color: Color.orange.opacity(0.5), radius: 5, x: 0, y: 2)
+                .shadow(color: Color.orange.opacity(0.2), radius: 2, x: 0, y: 2)
         }
         .padding(4)
     }
