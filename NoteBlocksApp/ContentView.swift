@@ -86,16 +86,6 @@ struct ContentView: View {
                 dismissButton: .default(Text("OK"))
             )
         }
-        .alert(isPresented: $showLogoutConfirmation) {
-            Alert(
-                title: Text("Log Out"),
-                message: Text("Are you sure you want to log out?"),
-                primaryButton: .destructive(Text("Log Out")) {
-                    onLogout()
-                },
-                secondaryButton: .cancel()
-            )
-        }
         .navigationTitle("Home")
         .navigationBarItems(trailing: EditButton())
     }
@@ -107,26 +97,9 @@ struct ContentView: View {
                 .foregroundColor(.gray)
                 .padding()
 
-            if username != "Guest" {
-                logOutButton
-            }
-
             Spacer()
         }
         .padding()
-    }
-
-    private var logOutButton: some View {
-        Button("Log Out") {
-            showLogoutConfirmation = true
-        }
-        .font(.system(size: 18, weight: .bold, design: .rounded))
-        .padding(.vertical, 8)
-        .padding(.horizontal, 12)
-        .frame(maxWidth: 150)
-        .background(LinearGradient(gradient: Gradient(colors: [Color.black, Color.black]), startPoint: .leading, endPoint: .trailing))
-        .foregroundColor(.white)
-        .cornerRadius(15)
     }
 
     private var mainContent: some View {
@@ -193,7 +166,7 @@ struct ContentView: View {
             .background(Color.clear)
         }
         .sheet(isPresented: $showProfileModal) {
-            ProfileView(username: username)
+            ProfileView(username: username, onLogout: onLogout, showLogoutConfirmation: $showLogoutConfirmation)
             .transition(.move(edge: .bottom))
         }
     }
