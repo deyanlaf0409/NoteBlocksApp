@@ -42,7 +42,7 @@ struct ArchiveView: View {
                         showDeleteConfirmation = true // Show confirmation alert
                     }) {
                         Text("Delete All")
-                            .foregroundColor(.blue)
+                            .foregroundColor(.orange)
                     }
                 }
             }

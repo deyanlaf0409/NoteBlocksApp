@@ -12,7 +12,6 @@ struct ContentView: View {
     @State private var ipAddress = ""
     @State private var showIPInputModal = false
     @State private var showProfileModal = false
-    @State private var showFriendsModal = false
     @State private var showLogoutConfirmation = false
 
     let username: String

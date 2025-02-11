@@ -179,8 +179,8 @@ struct EditNoteView: View {
 
 
     private func toggleHighlight() {
+        //note.highlighted.toggle()
         noteStore.toggleHighlight(note)
-        note.highlighted.toggle()
     }
 
     private func scheduleNotification(for note: Note, at date: Date) {
