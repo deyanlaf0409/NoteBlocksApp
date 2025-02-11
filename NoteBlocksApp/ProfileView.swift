@@ -8,7 +8,12 @@ import SwiftUI
 
 struct ProfileView: View {
     var username: String
-    var onLogout: () -> Void
+    var onLogout: () -> Void = {
+        if let bundleID = Bundle.main.bundleIdentifier {
+            UserDefaults.standard.removePersistentDomain(forName: bundleID)
+            UserDefaults.standard.synchronize()
+        }
+    }
     @Binding var showLogoutConfirmation: Bool // Add binding for showing the confirmation
     
     var body: some View {

@@ -5,15 +5,31 @@ struct ArchiveView: View {
     @State private var showDeleteConfirmation = false // State for showing alert
 
     var body: some View {
-        List {
-            ForEach(noteStore.archivedNotes.reversed()) { note in
-                NavigationLink(destination: NoteDetailView(note: note, noteStore: noteStore)) {
-                    VStack(alignment: .leading) {
-                        Text(note.text)
-                            .font(.headline)
-                        Text("Archived: \(formattedDate(note.dateModified))")
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
+        VStack {
+            if noteStore.archivedNotes.isEmpty {
+                VStack {
+                            Text("🗑️")  // Bin emoji
+                                .font(.system(size: 60))  // Adjust size
+                                .padding()
+
+                            Text("Your archive is empty")
+                                .font(.headline)
+                                .foregroundColor(.gray)
+                                .padding(.top, 10)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+            } else {
+                List {
+                    ForEach(noteStore.archivedNotes.reversed()) { note in
+                        NavigationLink(destination: NoteDetailView(note: note, noteStore: noteStore)) {
+                            VStack(alignment: .leading) {
+                                Text(note.text)
+                                    .font(.headline)
+                                Text("Archived: \(formattedDate(note.dateModified))")
+                                    .font(.subheadline)
+                                    .foregroundColor(.gray)
+                            }
+                        }
                     }
                 }
             }

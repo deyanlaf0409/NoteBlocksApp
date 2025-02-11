@@ -12,10 +12,16 @@ struct ContentView: View {
     @State private var ipAddress = ""
     @State private var showIPInputModal = false
     @State private var showProfileModal = false
+    @State private var showFriendsModal = false
     @State private var showLogoutConfirmation = false
 
     let username: String
-    var onLogout: () -> Void
+    var onLogout: () -> Void = {
+        if let bundleID = Bundle.main.bundleIdentifier {
+            UserDefaults.standard.removePersistentDomain(forName: bundleID)
+            UserDefaults.standard.synchronize()
+        }
+    }
 
     enum SearchCriteria {
         case text, date
@@ -125,6 +131,10 @@ struct ContentView: View {
                     logInButton
                 } else {
                     profileButton
+                    
+                    NavigationLink(destination: SocialView()) {  // Friends Navigation Button
+                                        navigationButton(icon: "globe", label: "Explore")
+                                    }
                 }
             }
         }
@@ -170,6 +180,7 @@ struct ContentView: View {
             .transition(.move(edge: .bottom))
         }
     }
+    
 
 
     private var logInButton: some View {
