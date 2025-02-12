@@ -338,10 +338,13 @@ struct ContentView: View {
     private func noteRow(note: Note) -> some View {
         ZStack {
             // NavigationLink that directly passes a binding to the note
-            NavigationLink(destination: EditNoteView(note: $noteStore.notes[noteStore.notes.firstIndex(where: { $0.id == note.id })!])) {
-                EmptyView()  // Empty view to trigger navigation
+            if let noteIndex = noteStore.notes.firstIndex(where: { $0.id == note.id }) {
+                NavigationLink(destination: EditNoteView(note: $noteStore.notes[noteIndex])) {
+                    EmptyView()
+                }
+                .opacity(0)
             }
-            .opacity(0)  // Make it invisible, but still active
+
             
             HStack {
                 noteInfo(note: note)
