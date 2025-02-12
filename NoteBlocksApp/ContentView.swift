@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @ObservedObject var noteStore = NoteStore()
+    @EnvironmentObject var noteStore: NoteStore
     @EnvironmentObject var networkMonitor: NetworkMonitor
     @Environment(\.colorScheme) var colorScheme
 
@@ -338,12 +338,10 @@ struct ContentView: View {
     private func noteRow(note: Note) -> some View {
         ZStack {
             // NavigationLink that directly passes a binding to the note
-            if let noteIndex = noteStore.notes.firstIndex(where: { $0.id == note.id }) {
-                NavigationLink(destination: EditNoteView(note: $noteStore.notes[noteIndex])) {
+                NavigationLink(destination: EditNoteView(note: $noteStore.notes[noteStore.notes.firstIndex(where: { $0.id == note.id })!])) {
                     EmptyView()
                 }
                 .opacity(0)
-            }
 
             
             HStack {

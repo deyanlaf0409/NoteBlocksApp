@@ -179,7 +179,7 @@ struct EditNoteView: View {
 
 
     private func toggleHighlight() {
-        note.highlighted.toggle()
+        //note.highlighted.toggle()
         noteStore.toggleHighlight(note)
     }
 
