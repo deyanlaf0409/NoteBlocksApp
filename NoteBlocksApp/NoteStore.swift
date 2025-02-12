@@ -271,7 +271,7 @@ class NoteStore: ObservableObject {
     
     func toggleHighlight(_ note: Note) {
         if let index = notes.firstIndex(where: { $0.id == note.id }) {
-            //notes[index].highlighted.toggle()
+            notes[index].highlighted.toggle()
             let updatedNote = notes[index]
             
             let userId = UserDefaults.standard.string(forKey: "userId") ?? ""
@@ -286,10 +286,10 @@ class NoteStore: ObservableObject {
                         print("Highlight status updated on server.")
                     case .failure(let error):
                         // Rollback if server update fails
-                        DispatchQueue.main.async {
-                            self.notes[index].highlighted.toggle() // Undo toggle
+                        //DispatchQueue.main.async {
+                           //self.notes[index].highlighted.toggle()
                             print("Failed to update highlight on server: \(error.localizedDescription)")
-                        }
+                        //}
                     }
                 }
             }
