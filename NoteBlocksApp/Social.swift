@@ -10,8 +10,8 @@ struct SocialView: View {
     @State private var selectedTab: Int = 0
     @State private var pendingRequestsCount: Int = 0
     @State private var friendRequests: [FriendRequest] = []
-    @State private var alertMessage: String = ""
-    @State private var showAlert: Bool = false
+    @State private var alertMessage: String = ""  // Shared alert message
+    @State private var showAlert: Bool = false    // Shared alert flag
 
     var body: some View {
         VStack {
@@ -23,9 +23,9 @@ struct SocialView: View {
             .padding()
 
             if selectedTab == 0 {
-                FriendSearchView(friendRequests: $friendRequests)  // Pass binding here
+                FriendSearchView(friendRequests: $friendRequests, showAlert: $showAlert, alertMessage: $alertMessage)  // Pass bindings
             } else {
-                FriendRequestsView(friendRequests: $friendRequests, onUpdate: fetchNetworkData)
+                FriendRequestsView(friendRequests: $friendRequests, onUpdate: fetchNetworkData, showAlert: $showAlert, alertMessage: $alertMessage)
             }
 
             Spacer()
@@ -35,7 +35,7 @@ struct SocialView: View {
             fetchNetworkData()
         }
         .alert(isPresented: $showAlert) {
-            Alert(title: Text("Friend Request"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
+            Alert(title: Text("Notification"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
         }
     }
 
@@ -90,16 +90,21 @@ struct SocialView: View {
 
 
 
+
 struct FriendRequestsView: View {
     @Binding var friendRequests: [FriendRequest]
     var onUpdate: () -> Void
+    @Binding var showAlert: Bool            // Add binding for showAlert
+    @Binding var alertMessage: String       // Add binding for alertMessage
     @State private var acceptingRequest: String? = nil
-    @State private var alertMessage: String = ""
-    @State private var showAlert: Bool = false
 
     var body: some View {
         VStack {
             if friendRequests.isEmpty {
+                Text("👥")  // Bin emoji
+                    .font(.system(size: 60))  // Adjust size
+                    .padding()
+                
                 Text("No pending friend requests")
                     .foregroundColor(.gray)
                     .padding()
@@ -129,7 +134,7 @@ struct FriendRequestsView: View {
                     DispatchQueue.main.async {
                         self.alertMessage = message
                         self.showAlert = true
-                        onUpdate()
+                        onUpdate()  // Update the network data after response
                     }
                 }
             case .failure(let error):
@@ -150,20 +155,21 @@ struct FriendRequestsView: View {
 
 
 
+
 struct FriendSearchView: View {
     @State private var searchText: String = ""
-    @State private var alertMessage: String = ""
-    @State private var showAlert = false
-    @Binding var friendRequests: [FriendRequest]  // Add binding to friendRequests in SocialView
+    @Binding var friendRequests: [FriendRequest]  // Binding to update the requests
+    @Binding var showAlert: Bool                  // Binding for alert visibility
+    @Binding var alertMessage: String             // Binding for the alert message
 
     var body: some View {
         VStack {
-            Text("Send friendship request")
+            Text("Send friendship request ✉️")
                 .font(.headline)
                 .padding(.top)
 
             HStack {
-                TextField("Enter username", text: $searchText)
+                TextField("Username", text: $searchText)
                     .padding(5)
                     .background(RoundedRectangle(cornerRadius: 25).fill(Color(.systemGray6)))
                     .padding(.leading, 10)
@@ -195,39 +201,28 @@ struct FriendSearchView: View {
         }
 
         let params = ["action": "send_request", "user_id": userId, "target_username": username]
-        
+
         NetworkManager.shared.makeRequest(parameters: params) { result in
             switch result {
             case .success(let response):
-                print("Success: \(response)")  // Debug print
                 if let message = response["message"] as? String {
                     DispatchQueue.main.async {
                         self.alertMessage = message
                         self.showAlert = true
-                        print("Alert will show with message: \(message)")  // Debug print
-                    }
-
-                    // Assuming the response includes the new request's details
-                    if let newRequest = response["new_request"] as? [String: Any],
-                       let id = newRequest["id"] as? String,
-                       let username = newRequest["username"] as? String {
-                        let request = FriendRequest(id: id, username: username)
-                        self.friendRequests.append(request)  // Add the new request to the list
                     }
                 }
             case .failure(let error):
-                print("Error: \(error.localizedDescription)")  // Debug print
                 self.showAlert(message: "Request failed: \(error.localizedDescription)")
             }
         }
     }
-
 
     func showAlert(message: String) {
         self.alertMessage = message
         self.showAlert = true
     }
 }
+
 
 
 
