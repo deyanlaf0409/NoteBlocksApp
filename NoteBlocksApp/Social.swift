@@ -101,13 +101,15 @@ struct FriendRequestsView: View {
     var body: some View {
         VStack {
             if friendRequests.isEmpty {
-                Text("👥")  // Bin emoji
-                    .font(.system(size: 60))  // Adjust size
-                    .padding()
-                
-                Text("No pending friend requests")
-                    .foregroundColor(.gray)
-                    .padding()
+                VStack(spacing: 0) { // Set spacing to 0 to remove extra space
+                    Text("👥")
+                        .font(.system(size: 60)) // Adjust size
+                    
+                    Text("No pending friend requests")
+                        .foregroundColor(.gray)
+                        .padding(.top, 5) // Optional: fine-tune spacing if needed
+                }
+
             } else {
                 ForEach(friendRequests) { request in
                     RequestRow(request: request, acceptingRequest: $acceptingRequest, onResponse: respondToRequest)
@@ -179,9 +181,9 @@ struct FriendSearchView: View {
                         sendFriendRequest(username: searchText)
                     }
                 }) {
-                    Image(systemName: "paperplane")
+                    Image(systemName: "person.badge.plus")
                         .foregroundColor(.orange)
-                        .font(.system(size: 20))
+                        .font(.system(size: 25))
                         .padding()
                 }
                 .disabled(searchText.isEmpty)

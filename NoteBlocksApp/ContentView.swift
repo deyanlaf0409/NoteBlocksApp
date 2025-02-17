@@ -175,8 +175,10 @@ struct ContentView: View {
             .background(Color.clear)
         }
         .sheet(isPresented: $showProfileModal) {
-            ProfileView(username: username, onLogout: onLogout, showLogoutConfirmation: $showLogoutConfirmation)
-            .transition(.move(edge: .bottom))
+            NavigationView {
+                ProfileView(username: username, onLogout: onLogout, showLogoutConfirmation: $showLogoutConfirmation)
+                .transition(.move(edge: .bottom))
+            }
         }
     }
     
