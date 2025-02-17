@@ -63,7 +63,7 @@ struct FriendsView: View {
             isPresented: $showRemoveConfirmation,
             titleVisibility: .visible
         ) {
-            Button("Remove Friend", role: .destructive) {
+            Button("Remove Friend") {
                 if let friend = friendToRemove {
                     removeFriend(friend: friend)
                 }
