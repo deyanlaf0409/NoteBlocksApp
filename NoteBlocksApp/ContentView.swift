@@ -49,6 +49,11 @@ struct ContentView: View {
                 } else {
                     loggedInView
                 }
+                
+                Spacer()
+                
+                bottomTextWithIcon
+                .padding()
             }
         }
     }
@@ -397,6 +402,18 @@ struct ContentView: View {
         formatter.timeStyle = .short
         return formatter.string(from: date)
     }
+}
+
+private var bottomTextWithIcon: some View {
+    HStack {
+
+        // Copyright Info
+        Text("© 2025 NoteBlocks")
+            .font(.system(size: 12))  // Same font size for consistency
+            .foregroundColor(.gray)
+    }
+    .frame(maxWidth: .infinity, alignment: .bottom)
+    .padding(.horizontal, 20)  // Add horizontal padding to give it space
 }
 
 private func dismissKeyboard() {
