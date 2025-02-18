@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import CoreImage.CIFilterBuiltins
 
 struct ProfileView: View {
     var username: String
@@ -17,21 +18,34 @@ struct ProfileView: View {
     }
     @Binding var showLogoutConfirmation: Bool
     
-    @State private var friends: [Friend] = [] // State to store the friends
+    @State private var friends: [Friend] = []
     @State private var errorMessage: String? = nil
-    @State private var isLoading: Bool = false  // To track loading state
-    
-    let userId = UserDefaults.standard.string(forKey: "userId")
+    @State private var isLoading: Bool = false
+    @State private var qrCodeImage: UIImage? = nil
+
+    let userId = UserDefaults.standard.string(forKey: "userId") ?? "" // Ensure no nil value
     
     var body: some View {
-        NavigationView {  // Wrap ProfileView with NavigationView
+        NavigationView {
             VStack {
                 Text("Welcome to \(username)'s Profile")
                     .font(.title)
                     .fontWeight(.bold)
                     .padding()
                 
-                // Navigate to FriendsView with the fetched friends
+                if let qrCodeImage = qrCodeImage {
+                    Image(uiImage: qrCodeImage)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 200, height: 200)
+                } else {
+                    Image(systemName: "qrcode")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 200, height: 200)
+                        .foregroundColor(.gray)
+                }
+                
                 NavigationLink(destination: FriendsView(friends: friends)) {
                     Text("Friends")
                         .bold()
@@ -42,7 +56,6 @@ struct ProfileView: View {
                 }
                 .padding(.top, 16)
                 
-                // Log out button
                 Button(action: {
                     showLogoutConfirmation = true
                 }) {
@@ -55,14 +68,12 @@ struct ProfileView: View {
                 }
                 .padding(.top, 16)
                 
-                // Display loading spinner while fetching friends
                 if isLoading {
-                    ProgressView("")
+                    ProgressView()
                         .progressViewStyle(CircularProgressViewStyle())
                         .padding()
                 }
                 
-                // Show error message if any
                 if let errorMessage = errorMessage {
                     Text(errorMessage)
                         .foregroundColor(.red)
@@ -71,6 +82,7 @@ struct ProfileView: View {
             }
             .onAppear {
                 fetchFriends()
+                generateQRCodeLocally()
             }
             .navigationTitle("Profile")
             .navigationBarTitleDisplayMode(.inline)
@@ -86,8 +98,10 @@ struct ProfileView: View {
     }
     
     func fetchFriends() {
-        guard let userId = userId, !userId.isEmpty else {
-            self.errorMessage = "Error: No userId found in UserDefaults"
+        guard !userId.isEmpty else {
+            DispatchQueue.main.async {
+                self.errorMessage = "No userId found."
+            }
             return
         }
         
@@ -114,6 +128,36 @@ struct ProfileView: View {
             }
         }
     }
+    
+    func generateQRCodeLocally() {
+        let filter = CIFilter.qrCodeGenerator()
+        let data = Data(username.utf8) // Encode the username instead of user ID
+        filter.setValue(data, forKey: "inputMessage")
+        filter.setValue("H", forKey: "inputCorrectionLevel") // High Error Correction
+
+        guard let outputImage = filter.outputImage else {
+            DispatchQueue.main.async {
+                self.errorMessage = "Failed to create QR code"
+            }
+            return
+        }
+
+        let transform = CGAffineTransform(scaleX: 10, y: 10) // Scale QR code
+        let scaledQR = outputImage.transformed(by: transform)
+
+        let context = CIContext()
+        if let cgImage = context.createCGImage(scaledQR, from: scaledQR.extent) {
+            let uiImage = UIImage(cgImage: cgImage)
+            DispatchQueue.main.async {
+                self.qrCodeImage = uiImage
+            }
+        } else {
+            DispatchQueue.main.async {
+                self.errorMessage = "Failed to generate QR code"
+            }
+        }
+    }
+
 }
 
 

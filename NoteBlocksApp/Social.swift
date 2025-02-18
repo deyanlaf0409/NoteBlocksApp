@@ -1,4 +1,5 @@
 import SwiftUI
+import AVFoundation
 
 struct FriendRequest: Identifiable {
     var id: String
@@ -158,21 +159,23 @@ struct FriendRequestsView: View {
 
 
 
+
 struct FriendSearchView: View {
     @State private var searchText: String = ""
-    @Binding var friendRequests: [FriendRequest]  // Binding to update the requests
-    @Binding var showAlert: Bool                  // Binding for alert visibility
-    @Binding var alertMessage: String             // Binding for the alert message
+    @Binding var friendRequests: [FriendRequest]
+    @Binding var showAlert: Bool
+    @Binding var alertMessage: String
+    @State private var showScanner: Bool = false
 
     var body: some View {
         VStack {
-            Text("Send friendship request ✉️")
+            Text("Send a Friend Request ✉️")
                 .font(.headline)
                 .padding(.top)
 
             HStack {
                 TextField("Username", text: $searchText)
-                    .padding(5)
+                    .padding(10)
                     .background(RoundedRectangle(cornerRadius: 25).fill(Color(.systemGray6)))
                     .padding(.leading, 10)
 
@@ -187,11 +190,27 @@ struct FriendSearchView: View {
                         .padding()
                 }
                 .disabled(searchText.isEmpty)
+
+                // QR Code Scanner Button
+                Button(action: {
+                    showScanner = true
+                }) {
+                    Image(systemName: "qrcode.viewfinder")
+                        .foregroundColor(.blue)
+                        .font(.system(size: 25))
+                        .padding()
+                }
+            }
+        }
+        .sheet(isPresented: $showScanner) {
+            QRScannerView { scannedUsername in
+                showScanner = false
+                sendFriendRequest(username: scannedUsername) // Send request using scanned username
             }
         }
         .alert(isPresented: $showAlert) {
             Alert(title: Text("Friend Request"), message: Text(alertMessage), dismissButton: .default(Text("OK"), action: {
-                searchText = "" // Clear text field after success
+                searchText = ""
             }))
         }
     }
@@ -205,16 +224,17 @@ struct FriendSearchView: View {
         let params = ["action": "send_request", "user_id": userId, "target_username": username]
 
         NetworkManager.shared.makeRequest(parameters: params) { result in
-            switch result {
-            case .success(let response):
-                if let message = response["message"] as? String {
-                    DispatchQueue.main.async {
-                        self.alertMessage = message
-                        self.showAlert = true
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let response):
+                    if let message = response["message"] as? String {
+                        alertMessage = message
+                        showAlert = true
                     }
+                case .failure(let error):
+                    alertMessage = "Request failed: \(error.localizedDescription)"
+                    showAlert = true
                 }
-            case .failure(let error):
-                self.showAlert(message: "Request failed: \(error.localizedDescription)")
             }
         }
     }
@@ -224,6 +244,8 @@ struct FriendSearchView: View {
         self.showAlert = true
     }
 }
+
+
 
 
 
