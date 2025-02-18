@@ -198,7 +198,10 @@ struct Late_Night_NotesApp: App {
 
         UserDefaults.standard.removePersistentDomain(forName: Bundle.main.bundleIdentifier!)
         UserDefaults.standard.removeObject(forKey: "loggedInUser")
+        UserDefaults.standard.removeObject(forKey: "savedNotes")
+        UserDefaults.standard.removeObject(forKey: "savedFolders")
         UserDefaults.standard.set(false, forKey: "isLoggedIn")
+        
 
         print("App state reset to initial state.")
     }
@@ -223,6 +226,9 @@ struct Late_Night_NotesApp: App {
                     // Check if the response has a 'status' field and that it is 'success'
                     guard let status = json["status"] as? String, status == "success" else {
                         print("Error: Invalid status in response or no notes found.")
+                        
+                        // If the user doesn't exist or the status is not success, reset the app state
+                        resetToInitialState()
                         return
                     }
 
@@ -231,6 +237,11 @@ struct Late_Night_NotesApp: App {
                        let username = userDict["username"] as? String {
                         loggedInUser = username
                         print("Username: \(username)")
+                    } else {
+                        // If no username is found, reset the app state
+                        print("User not found in response. Resetting app state.")
+                        resetToInitialState()
+                        return
                     }
 
                     // Extract the folders array
@@ -306,7 +317,7 @@ struct Late_Night_NotesApp: App {
                                                 highlighted: highlighted,
                                                 folderId: folderIdString != nil ? UUID(uuidString: folderIdString!) ?? UUID() : nil,
                                                 locked: locked)
-                                                
+                                
 
                                 // Add the note to the array
                                 fetchedNotes.append(note)
@@ -331,12 +342,12 @@ struct Late_Night_NotesApp: App {
 
                 case .failure(let error):
                     print("Failed to fetch notes from server: \(error.localizedDescription)")
+                    
+                    // If the network fetch fails, reset the app state
+                    resetToInitialState()
                 }
             }
         }
     }
-
-
-
 }
 
