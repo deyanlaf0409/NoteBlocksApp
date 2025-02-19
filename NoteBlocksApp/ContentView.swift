@@ -61,7 +61,6 @@ struct ContentView: View {
                 Spacer()
                 
                 bottomTextWithIcon
-                .padding()
             }
         }
     }
