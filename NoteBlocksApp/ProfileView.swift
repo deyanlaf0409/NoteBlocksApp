@@ -28,16 +28,32 @@ struct ProfileView: View {
     var body: some View {
         NavigationView {
             VStack {
-                Text("Welcome to \(username)'s Profile")
+                Text("\(username)")
                     .font(.title)
                     .fontWeight(.bold)
                     .padding()
                 
                 if let qrCodeImage = qrCodeImage {
-                    Image(uiImage: qrCodeImage)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 200, height: 200)
+                    ZStack {
+                        // QR Code image
+                        Image(uiImage: qrCodeImage)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 200, height: 200)  // Size of the QR code
+                            .clipShape(RoundedRectangle(cornerRadius: 20))  // Rounded corners for QR code
+                            .shadow(radius: 10)
+                            .padding()
+                            .background(Color.white)
+                            .cornerRadius(20)
+                        
+                        // Circle with the image in the center
+                        Image("qrimage")  // Replace with your image name or a UIImage reference
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 40, height: 40)  // Size of the circle image
+                            .clipShape(Circle())  // Clips the image to a circular shape
+                            .overlay(Circle().stroke(Color.black, lineWidth: 4))  // Optional: Adds a white border around the circle
+                    }
                 } else {
                     Image(systemName: "qrcode")
                         .resizable()
@@ -45,6 +61,8 @@ struct ProfileView: View {
                         .frame(width: 200, height: 200)
                         .foregroundColor(.gray)
                 }
+
+
                 
                 NavigationLink(destination: FriendsView(friends: friends)) {
                     Text("Friends")

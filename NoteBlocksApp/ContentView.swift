@@ -27,19 +27,27 @@ struct ContentView: View {
     }
 
     var filteredNotes: [Note] {
-        noteStore.notes.filter { note in
-            switch selectedSearchCriteria {
-            case .text:
-                return searchText.isEmpty || note.text.localizedCaseInsensitiveContains(searchText)
-            case .date:
-                let formatter = DateFormatter()
-                formatter.dateStyle = .medium
-                formatter.timeStyle = .none
-                let dateString = formatter.string(from: note.dateCreated)
-                return searchText.isEmpty || dateString.localizedCaseInsensitiveContains(searchText)
+        noteStore.notes
+            .filter { note in
+                switch selectedSearchCriteria {
+                case .text:
+                    return searchText.isEmpty || note.text.localizedCaseInsensitiveContains(searchText)
+                case .date:
+                    let formatter = DateFormatter()
+                    formatter.dateStyle = .medium
+                    formatter.timeStyle = .none
+                    let dateString = formatter.string(from: note.dateCreated)
+                    return searchText.isEmpty || dateString.localizedCaseInsensitiveContains(searchText)
+                }
             }
-        }
+            .sorted {
+                if $0.highlighted == $1.highlighted {
+                    return $0.dateModified > $1.dateModified
+                }
+                return $0.highlighted && !$1.highlighted
+            }
     }
+
 
     var body: some View {
         NavigationView {
@@ -332,7 +340,12 @@ struct ContentView: View {
             }
 
             List {
-                ForEach(filteredNotes) { note in
+                ForEach(filteredNotes.sorted {
+                    if $0.highlighted == $1.highlighted {
+                        return $0.dateModified > $1.dateModified
+                    }
+                    return $0.highlighted && !$1.highlighted
+                }) { note in
                     if !note.isArchived {
                         noteRow(note: note)
                     }
@@ -341,6 +354,7 @@ struct ContentView: View {
             }
         }
     }
+
 
     private func noteRow(note: Note) -> some View {
         ZStack {
@@ -406,7 +420,6 @@ struct ContentView: View {
 
 private var bottomTextWithIcon: some View {
     HStack {
-
         // Copyright Info
         Text("© 2025 NoteBlocks")
             .font(.system(size: 12))  // Same font size for consistency
@@ -414,7 +427,11 @@ private var bottomTextWithIcon: some View {
     }
     .frame(maxWidth: .infinity, alignment: .bottom)
     .padding(.horizontal, 20)  // Add horizontal padding to give it space
+    .background(Color.clear)  // Remove the color from HStack background
+    .foregroundColor(.clear)
 }
+
+
 
 private func dismissKeyboard() {
     UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)

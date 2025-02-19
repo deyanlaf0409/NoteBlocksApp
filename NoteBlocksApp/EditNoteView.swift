@@ -28,87 +28,98 @@ struct EditNoteView: View {
             .padding(.horizontal, 10)
             
             HStack {
-                    Text("Folder:")
-                        .font(.body) // You can customize the font style here
+                Text("Folder:")
+                    .font(.body)
+                
+                // Custom Menu Button
+                Menu {
+                    Button(action: {
+                        selectedFolderId = nil // Set to "None"
+                    }) {
+                        Text("None")
+                    }
                     
-                    Picker("Select Folder", selection: $selectedFolderId) {
-                        Text("None").tag(UUID?.none)  // None option with a UUID?.none tag
-                        ForEach(noteStore.folders, id: \.id) { folder in
-                            Text(folder.name).tag(folder.id as UUID?)  // Folder option with UUID? tag
+                    ForEach(noteStore.folders, id: \.id) { folder in
+                        Button(action: {
+                            selectedFolderId = folder.id
+                        }) {
+                            Text(folder.name)
                         }
                     }
-                    .pickerStyle(MenuPickerStyle())
-                    .padding(.trailing) // Optional: add padding on the right if needed
+                } label: {
+                    HStack {
+                        Text(selectedFolderId == nil ? "None" : noteStore.folders.first(where: { $0.id == selectedFolderId })?.name ?? "Select Folder")
+                            .foregroundColor(.primary)
+                        Spacer()
+                        Image(systemName: "chevron.down")
+                            .foregroundColor(.gray)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(RoundedRectangle(cornerRadius: 10).fill(Color(.systemGray6)))
+                    .frame(maxWidth: 120) // Adjust width as needed
+                }
+            }
+            .padding(.horizontal)
+
+            VStack {
+                HStack {
+                    Button(action: { showingReminderSheet.toggle() }) {
+                        VStack {
+                            Image(systemName: "calendar.badge.clock")
+                                .foregroundColor(.orange)
+                                .font(.system(size: 24))
+                            Text("Reminder")
+                                .font(.footnote)
+                                .foregroundColor(.primary)
+                        }
+                    }
+                    .buttonStyle(CustomButtonStyle())
+
+                    Button(action: toggleLock) {
+                        VStack {
+                            Image(systemName: note.locked ? "lock.fill" : "lock.open")
+                                .foregroundColor(note.locked ? .yellow : .gray)
+                                .font(.system(size: 24))
+                            Text(note.locked ? "Locked" : "Unlocked")
+                                .font(.footnote)
+                                .foregroundColor(.primary)
+                        }
+                    }
+                    .buttonStyle(CustomButtonStyle())
                 }
                 .padding(.horizontal)
 
-            Button(action: { showingReminderSheet.toggle() }) {
                 HStack {
-                    Image(systemName: "calendar.badge.clock")
-                        .foregroundColor(.orange)
-                        .font(.system(size: 24))
-                    Text("Set Reminder")
-                        .foregroundColor(.primary)
+                    Button(action: toggleHighlight) {
+                        VStack {
+                            Image(systemName: note.highlighted ? "star.fill" : "star")
+                                .foregroundColor(note.highlighted ? .yellow : .gray)
+                                .font(.system(size: 24))
+                            Text(note.highlighted ? "Unhighlight" : "Highlight")
+                                .font(.footnote)
+                                .foregroundColor(.primary)
+                        }
+                    }
+                    .buttonStyle(CustomButtonStyle())
+
+                    Button(action: saveNote) {
+                        VStack {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.green)
+                                .font(.system(size: 24))
+                            Text("Save")
+                                .font(.footnote)
+                                .foregroundColor(.primary)
+                        }
+                    }
+                    .buttonStyle(CustomButtonStyle())
                 }
+                .padding(.horizontal)
+
+                Spacer()
             }
-            .padding()
 
-            // Check if reminderDate is set and display the date
-            if let reminderDate = reminderDate {
-                Text("Reminder set for: \(reminderDate, formatter: dateFormatter)")
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
-                    .padding(.top, 4)
-
-                Button("Clear Reminder") {
-                    self.reminderDate = nil
-                }
-                .font(.system(size: 18, weight: .bold, design: .rounded))
-                .padding(.vertical, 10)
-                .padding(.horizontal, 12)
-                .bold()
-                .background(Color.black)
-                .foregroundColor(.white)
-                .cornerRadius(8)
-            }
-            
-            Button(action: toggleLock) {
-                HStack {
-                    Image(systemName: note.locked ? "lock.fill" : "lock.open")
-                        .foregroundColor(note.locked ? .yellow : .gray)
-                        .font(.system(size: 24))
-                    Text(note.locked ? "Locked" : "Unlocked")
-                        .foregroundColor(Color.primary)
-                }
-            }
-            .padding()
-            
-            
-            
-
-
-            Button(action: toggleHighlight) {
-                HStack {
-                    Image(systemName: note.highlighted ? "star.fill" : "star")
-                        .foregroundColor(note.highlighted ? .yellow : .gray)
-                        .font(.system(size: 24))
-                    Text(note.highlighted ? "Unhighlight" : "Highlight")
-                        .foregroundColor(Color.primary)
-                }
-            }
-            .padding()
-
-            Button(action: saveNote) {
-                Text("Save")
-                    .bold()
-                    .padding()
-                    .background(Color.black)
-                    .foregroundColor(.white)
-                    .cornerRadius(15)
-            }
-            .padding()
-
-            Spacer()
         }
         .navigationTitle("View Block")
         .onAppear {
@@ -291,3 +302,15 @@ private func authenticateUser(completion: @escaping (Bool) -> Void) {
         print(error?.localizedDescription ?? "Biometrics not available")
     }
 }
+
+struct CustomButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .padding()
+            .frame(maxWidth: .infinity, minHeight: 80)
+            .background(RoundedRectangle(cornerRadius: 10).fill(Color(.systemGray6)))
+            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
+            .animation(.easeOut(duration: 0.2), value: configuration.isPressed)
+    }
+}
+
