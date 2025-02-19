@@ -175,7 +175,7 @@ struct FriendSearchView: View {
 
             HStack {
                 TextField("Username", text: $searchText)
-                    .padding(10)
+                    .padding(7)
                     .background(RoundedRectangle(cornerRadius: 25).fill(Color(.systemGray6)))
                     .padding(.leading, 10)
 
