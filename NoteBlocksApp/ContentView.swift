@@ -317,10 +317,7 @@ struct ContentView: View {
             Circle()
                 .fill(
                     LinearGradient(
-                        gradient: Gradient(colors: [
-                            Color(red: 222/255, green: 90/255, blue: 0/255), // Custom RGB Color
-                            Color(red: 222/255, green: 90/255, blue: 0/255)  // Same color for gradient
-                        ]),
+                        gradient: Gradient(colors: [.orange, .yellow]), // Using system pink color
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
@@ -331,7 +328,8 @@ struct ContentView: View {
                         .font(.system(size: 25, weight: .bold))
                         .foregroundColor(colorScheme == .dark ? .black : .white)
                 )
-                .shadow(color: Color(red: 222/255, green: 90/255, blue: 0/255).opacity(0.2), radius: 2, x: 0, y: 2)
+                .shadow(color: Color.orange.opacity(0.2), radius: 2, x: 0, y: 2)
+
 
         }
         .padding(4)
@@ -345,6 +343,7 @@ struct ContentView: View {
                     .scaledToFit()
                     .frame(maxWidth: 290, maxHeight: 290)
                     .ignoresSafeArea()
+                    .opacity(0.9)
             }
 
             List {
@@ -384,20 +383,23 @@ struct ContentView: View {
 
 
     private func noteInfo(note: Note) -> some View {
-        VStack(alignment: .leading) {
-            HStack {
+        HStack {
+
+            VStack(alignment: .leading) {
                 Text(note.text)
                     .font(.headline)
-            }
-            Text("Created: \(formattedDate(note.dateCreated))")
-                .font(.subheadline)
-                .foregroundColor(.gray)
 
-            Text("Modified: \(formattedDate(note.dateModified))")
-                .font(.subheadline)
-                .foregroundColor(.gray)
+                Text("Created: \(formattedDate(note.dateCreated))")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+
+                Text("Modified: \(formattedDate(note.dateModified))")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+            }
         }
     }
+
 
     private func noteIcons(note: Note) -> some View {
         HStack {

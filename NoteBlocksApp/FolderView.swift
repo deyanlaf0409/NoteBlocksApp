@@ -21,7 +21,8 @@ struct FolderView: View {
                     Image("folders") // Image should render here
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 220, height: 220) // Adjust size as needed
+                        .frame(width: 220, height: 220)
+                        .opacity(0.9)
                 } else {
                     Text("Image not found")
                         .foregroundColor(.red)

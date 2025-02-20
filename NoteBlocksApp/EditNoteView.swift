@@ -116,6 +116,27 @@ struct EditNoteView: View {
                     .buttonStyle(CustomButtonStyle())
                 }
                 .padding(.horizontal)
+                
+                if let reminderDate = reminderDate {
+                    VStack {
+                        Text("Reminder set for: \(reminderDate, formatter: dateFormatter)")
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                            .padding(.top, 8)
+                        
+                        Button("Clear Reminder") {
+                            self.reminderDate = nil
+                        }
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .padding(.vertical, 10)
+                        .padding(.horizontal, 12)
+                        .bold()
+                        .background(Color.black)
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                    }
+                    .padding(.top, 20) // Adjust spacing below buttons
+                }
 
                 Spacer()
             }

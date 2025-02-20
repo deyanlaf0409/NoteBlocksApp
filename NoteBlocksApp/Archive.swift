@@ -12,6 +12,7 @@ struct ArchiveView: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: 350, height: 350)
+                        .opacity(0.9)
 
                             Text("Your archive is empty")
                                 .font(.headline)

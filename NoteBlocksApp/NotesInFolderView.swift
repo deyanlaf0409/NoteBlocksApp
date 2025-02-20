@@ -21,6 +21,7 @@ struct NotesInFolderView: View {
                     .scaledToFit()
                     .frame(width: UIScreen.main.bounds.width, height: 200) // Make image span the width
                     .clipped() // Ensure it doesn't overflow
+                    .opacity(0.9)
                     .padding(.top, -80) // Move the image up slightly without overlapping
                 
                 VStack {
