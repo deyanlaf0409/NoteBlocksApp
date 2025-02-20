@@ -15,53 +15,75 @@ struct IPInputView: View {
                 .font(.title2)
                 .padding(.top, 5) // Slight top padding to ensure it’s not too close to the top edge
 
-            if !isSubscribed {
-                Image("subscribe")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 300, height: 300) // Explicit width and height, adjust as needed
-                    .clipped() // To make sure it doesn't stretch
-                    .opacity(0.9)
-            }
-
-
-            // The button placed immediately after the image with no space
-            if !isSubscribed {
-                Button("🎉 Let's Go ! 🥳") {
-                    startSubscription()
+            if isSubscribed {
+                // Show the disclaimer content if subscribed
+                DisclaimerView()
+                    .padding(.top, 20) // Adjust padding as needed
+            } else {
+                // Show the initial subscription flow
+                if !isSubscribed {
+                    Image("subscribe")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 300, height: 300) // Explicit width and height, adjust as needed
+                        .clipped() // To make sure it doesn't stretch
+                        .opacity(0.9)
                 }
-                .styledPrimaryButton()
-                .padding(.top, 0) // No extra space between image and button
-            }
 
-            // Features displayed before subscription (if not subscribed)
-            if !isSubscribed {
-                VStack(alignment: .center, spacing: 18) {
-                    Text("Your VIP Pass to Productivity")
-                        .font(.title2) // Slightly bigger title
-                        .bold()
-                        .padding(.bottom, 8)
-
-                    // Grouped Features in a Grid
-                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 15) {
-                        FeatureRow(icon: "paperplane", text: "Fast send to friends")
-                        FeatureRow(icon: "person.3", text: "Join the NoteBlocks community")
-                        FeatureRow(icon: "nosign", text: "No ads or interruptions")
-                        FeatureRow(icon: "desktopcomputer", text: "Access on any device")
-                        FeatureRow(icon: "checkmark.icloud.fill", text: "Unlimited cloud storage")
-                        FeatureRow(icon: "infinity", text: "Unlimited accounts")
-                        FeatureRow(icon: "arrow.triangle.2.circlepath", text: "24/7 Sync & Backup")
-                        FeatureRow(icon: "message", text: "Priority support")
+                // The button placed immediately after the image with no space
+                if !isSubscribed {
+                    Button("🎉 Let's Go ! 🥳") {
+                        startSubscription()
                     }
-                    .padding(.horizontal)
-
-                    // The 9th Feature at the Bottom, Centered
-                    FeatureRow(icon: "sparkles", text: "Access every new feature")
-                        .foregroundColor(.yellow)
-                        .padding(.top, 18)
-                        .frame(maxWidth: .infinity, alignment: .center)
+                    .styledPrimaryButton()
+                    .padding(.top, 3) // No extra space between image and button
                 }
-                .padding(.top, 25)
+
+                // Features displayed before subscription (if not subscribed)
+                if !isSubscribed {
+                    VStack(alignment: .center, spacing: 18) {
+                        Text("Your VIP Pass to Productivity")
+                            .font(.title2) // Slightly bigger title
+                            .bold()
+                            .padding(.bottom, 8)
+
+                        // Grouped Features in a Grid
+                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 15) {
+                            FeatureRow(icon: "paperplane", text: "Fast send to friends")
+                            FeatureRow(icon: "person.3", text: "Join the NoteBlocks community")
+                            FeatureRow(icon: "nosign", text: "No ads or interruptions")
+                            FeatureRow(icon: "desktopcomputer", text: "Access on any device")
+                            FeatureRow(icon: "checkmark.icloud.fill", text: "Unlimited cloud storage")
+                            FeatureRow(icon: "infinity", text: "Unlimited accounts")
+                            FeatureRow(icon: "arrow.triangle.2.circlepath", text: "24/7 Sync & Backup")
+                            FeatureRow(icon: "message", text: "Priority support")
+                        }
+                        .padding(.horizontal)
+                        .padding(.top, 3)
+
+                        // The 9th Feature at the Bottom, Centered
+                        FeatureRow(icon: "sparkles", text: "Access every new feature", isSpecial: true) // Set isSpecial to true for yellow
+                            .padding(.top, 10)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    }
+                    .padding(.top, 25)
+                }
+            }
+
+            // The button that should be present after the subscription, for example, "Sign In" or "Proceed"
+            if isSubscribed {
+                Button("Proceed") {
+                    // Handle your action for proceeding to the dashboard or login
+                    showSafariView = true
+                }
+                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .padding(.vertical, 12)
+                .padding(.horizontal, 22)
+                .frame(maxWidth: 240)
+                .background(.black)
+                .foregroundColor(.white)
+                .cornerRadius(24)
+                .padding(.top, 18)
             }
 
             Spacer()
@@ -80,7 +102,6 @@ struct IPInputView: View {
         }
     }
 
-
     private func checkSubscriptionStatus() {
         if isSubscribed {
             showSafariView = true
@@ -91,6 +112,7 @@ struct IPInputView: View {
         isSubscribed = true
     }
 }
+
 
 // MARK: - Disclaimer View
 struct DisclaimerView: View {
@@ -104,6 +126,12 @@ struct DisclaimerView: View {
         .background(Color(.systemGray6))
         .cornerRadius(12)
         .padding(.horizontal)
+        
+        Image("disclaimer") // Replace with your custom image name if needed
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 275, height: 275) // Adjust image size here
+                        .padding(.top, 0) // Optional space between text and image
     }
 }
 
@@ -119,13 +147,15 @@ struct DisclaimerItem: View {
                     .foregroundColor(.primary)
                     .font(.system(size: 22)) // Slightly bigger icon
                 Text(title)
-                    .font(.system(size: 20, weight: .bold)) // Bigger title
+                    .font(.system(size: 24, weight: .bold)) // Bigger title
                     .foregroundColor(.primary)
+                    .padding(.top, 10)
             }
             Text(description)
-                .font(.system(size: 18, weight: .medium)) // Slightly bigger text
+                .font(.system(size: 18, weight: .regular)) // Slightly bigger text
                 .foregroundColor(.primary)
                 .padding(.bottom, 10)
+
         }
     }
 }
@@ -134,15 +164,16 @@ struct DisclaimerItem: View {
 struct FeatureRow: View {
     let icon: String
     let text: String
+    var isSpecial: Bool = false
 
     var body: some View {
         HStack {
             Image(systemName: icon)
-                .foregroundColor(.primary)
-                .font(.system(size: 20)) // Slightly bigger icon
+                            .foregroundColor(isSpecial ? .yellow : .primary) // Apply yellow if it's the special case
+                            .font(.system(size: 20)) // Slightly bigger icon
             Text(text)
                 .foregroundColor(.primary)
-                .font(.system(size: 18)) // Slightly bigger text
+                .font(.system(size: 16)) // Slightly bigger text
         }
     }
 }
