@@ -196,7 +196,7 @@ struct FriendSearchView: View {
                     showScanner = true
                 }) {
                     Image(systemName: "qrcode.viewfinder")
-                        .foregroundColor(.blue)
+                        .foregroundColor(.orange)
                         .font(.system(size: 25))
                         .padding()
                 }

@@ -315,14 +315,24 @@ struct ContentView: View {
             }
         }) {
             Circle()
-                .fill(LinearGradient(gradient: Gradient(colors: [Color.orange, Color.orange]), startPoint: .topLeading, endPoint: .bottomTrailing))
+                .fill(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color(red: 222/255, green: 90/255, blue: 0/255), // Custom RGB Color
+                            Color(red: 222/255, green: 90/255, blue: 0/255)  // Same color for gradient
+                        ]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
                 .frame(width: 35, height: 35)
                 .overlay(
                     Image(systemName: "plus")
                         .font(.system(size: 25, weight: .bold))
                         .foregroundColor(colorScheme == .dark ? .black : .white)
                 )
-                .shadow(color: Color.orange.opacity(0.2), radius: 2, x: 0, y: 2)
+                .shadow(color: Color(red: 222/255, green: 90/255, blue: 0/255).opacity(0.2), radius: 2, x: 0, y: 2)
+
         }
         .padding(4)
     }
@@ -333,9 +343,8 @@ struct ContentView: View {
                 Image("menu")
                     .resizable()
                     .scaledToFit()
-                    .frame(maxWidth: 280, maxHeight: 280)
+                    .frame(maxWidth: 290, maxHeight: 290)
                     .ignoresSafeArea()
-                    .opacity(0.9)
             }
 
             List {

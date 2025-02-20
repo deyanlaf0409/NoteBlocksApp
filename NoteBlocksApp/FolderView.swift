@@ -14,65 +14,90 @@ struct FolderView: View {
 
     var body: some View {
         NavigationView {
+    
             VStack {
-                TextField("New Folder Name", text: $newFolderName)
-                    .padding(8)
-                    .background(RoundedRectangle(cornerRadius: 25).fill(Color(.systemGray6))) // Light background
-                    .padding(.horizontal, 8) // Keep consistent padding
-                    .padding(.top, 15)
-
-
-                Button(action: {
-                    if !newFolderName.isEmpty {
-                        noteStore.addFolder(name: newFolderName)
-                        noteStore.saveFolders()
-                        noteStore.loadFolders()
-                        newFolderName = ""
-                        folderListUpdated.toggle()  // Trigger a view update
-                    }
-                }) {
-                    Text("+ 📁 Add Folder")
-                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                // Test Image Directly:
+                if let _ = UIImage(named: "folders") {
+                    Image("folders") // Image should render here
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 220, height: 220) // Adjust size as needed
+                } else {
+                    Text("Image not found")
+                        .foregroundColor(.red)
                         .padding()
-                        .background(Color.black)
-                        .foregroundColor(.white)
-                        .cornerRadius(15)
                 }
-                .padding()
+                HStack {
+                        // TextField
+                        TextField("New Folder Name", text: $newFolderName)
+                            .padding(8)
+                            .background(RoundedRectangle(cornerRadius: 25).fill(Color(.systemGray6)))
+                            .padding(.horizontal, 5)
+                            .frame(width: 200) // Adjust width to your preference
+                            .padding(.top, 15)
+                        
+                    Button(action: {
+                        if !newFolderName.isEmpty {
+                            noteStore.addFolder(name: newFolderName)
+                            noteStore.saveFolders()
+                            noteStore.loadFolders()
+                            newFolderName = ""
+                            folderListUpdated.toggle()
+                        }
+                    }) {
+                        Text("+ 📁 Add Folder")
+                            .font(.system(size: 18, weight: .bold, design: .rounded)) // Smaller font size
+                            .padding(10) // Reduced padding
+                            .background(Color.black)
+                            .foregroundColor(.white)
+                            .cornerRadius(15) // Slightly smaller corner radius for a compact look
+                    }
+
+                        .padding(.top, 15) // Adjust the padding to align with the text field
+                    }
+                    .padding(.horizontal, 10) // To make sure the HStack has proper padding
+
 
                 List {
-                    ForEach(noteStore.folders) { folder in
-                        NavigationLink(destination: NotesInFolderView(folder: folder)) {
-                            HStack {
-                                Image(systemName: "folder.fill") // Use the folder icon
-                                    .foregroundColor(.primary) // Adjust color as desired
-                                Text(folder.name)
-                                
-                                
-                                let noteCount = noteStore.notes.filter { $0.folderID == folder.id }.count
-                                Text("\(noteCount)")
-                                    .font(.body)
-                                    .foregroundColor(.orange)
-                                Spacer()
+                    if noteStore.folders.isEmpty {
+                        Text("No folders yet")
+                            .font(.title3)
+                            .foregroundColor(.gray)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .listRowBackground(Color.clear)
+                    } else {
+                        ForEach(noteStore.folders) { folder in
+                            NavigationLink(destination: NotesInFolderView(folder: folder)) {
+                                HStack {
+                                    Image(systemName: "folder.fill")
+                                        .foregroundColor(.primary)
+                                    Text(folder.name)
+
+                                    let noteCount = noteStore.notes.filter { $0.folderID == folder.id }.count
+                                    Text("\(noteCount)")
+                                        .font(.body)
+                                        .foregroundColor(.orange)
+                                    Spacer()
+                                }
                             }
                         }
+                        .onDelete(perform: deleteFolder)
                     }
-                    .onDelete(perform: deleteFolder)
                 }
+                .background(Color.clear)
             }
-            
         }
         .navigationTitle("Manage Folders")
     }
 
-    // Function to handle folder deletion
     private func deleteFolder(at offsets: IndexSet) {
         for index in offsets {
-            let folder = noteStore.folders[index]  // Get the folder to be deleted
-            noteStore.deleteFolder(folder)         // Pass the folder to deleteFolder method
+            let folder = noteStore.folders[index]
+            noteStore.deleteFolder(folder)
         }
     }
 }
+
 
 
 

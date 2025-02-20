@@ -14,27 +14,35 @@ struct NotesInFolderView: View {
 
     var body: some View {
         VStack {
-            HStack {
-                // Always show TextField for editing folder name
-                HStack {
-                    Image(systemName: "pencil")
-                        .foregroundColor(.gray)
-                    
-                    TextField("Folder Name", text: $newFolderName, onCommit: {
-                        updateFolderName()
-                    })
-                    .foregroundColor(.primary)
-                    .padding(5)
-                }
-                .padding(3)
-                .background(RoundedRectangle(cornerRadius: 25).fill(Color(.systemGray6)))
-                .padding(.horizontal, 10)
+            ZStack {
+                // Folder image that stays at the top
+                Image("folderIN") // Replace with your image name
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: UIScreen.main.bounds.width, height: 200) // Make image span the width
+                    .clipped() // Ensure it doesn't overflow
+                    .padding(.top, -80) // Move the image up slightly without overlapping
                 
-                Spacer()
+                VStack {
+                    // Folder name input field
+                    HStack {
+                        Image(systemName: "pencil")
+                            .foregroundColor(.gray)
+                        
+                        TextField("Folder Name", text: $newFolderName, onCommit: {
+                            updateFolderName()
+                        })
+                        .foregroundColor(.primary)
+                        .padding(5)
+                    }
+                    .padding(3)
+                    .background(RoundedRectangle(cornerRadius: 25).fill(Color(.systemGray6)))
+                    .padding(.horizontal, 10)
+                    .padding(.top, 160) // Adjust to ensure the text field appears below the image
+                }
             }
-            .padding(10)
             
-            // Folder notes list
+            // Notes list
             List {
                 ForEach(noteStore.notes.filter { $0.folderID == folder.id }) { note in
                     NavigationLink(destination: EditNoteView(note: $noteStore.notes[noteStore.notes.firstIndex(where: { $0.id == note.id })!])) {
@@ -53,8 +61,9 @@ struct NotesInFolderView: View {
                     }
                 }
             }
+            .padding(.top, 20) // Add space between the folder name and the notes list
         }
-        .navigationTitle("") // Empty title, we use the custom name in the top left
+        .navigationTitle("") // Empty title, custom name is used in the navigation bar
         .onAppear {
             newFolderName = folder.name
         }
@@ -70,4 +79,7 @@ struct NotesInFolderView: View {
         noteStore.loadFolders() // Refresh folder list if necessary
     }
 }
+
+
+
 

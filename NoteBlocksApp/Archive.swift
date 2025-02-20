@@ -8,9 +8,10 @@ struct ArchiveView: View {
         VStack {
             if noteStore.archivedNotes.isEmpty {
                 VStack {
-                            Text("🗑️")  // Bin emoji
-                                .font(.system(size: 60))  // Adjust size
-                                .padding()
+                    Image("archive") // Image should render here
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 350, height: 350)
 
                             Text("Your archive is empty")
                                 .font(.headline)

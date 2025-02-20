@@ -40,11 +40,11 @@ struct ProfileView: View {
                             .resizable()
                             .scaledToFit()
                             .frame(width: 200, height: 200)  // Size of the QR code
-                            .clipShape(RoundedRectangle(cornerRadius: 20))  // Rounded corners for QR code
+                            .clipShape(RoundedRectangle(cornerRadius: 22))  // Rounded corners for QR code
                             .shadow(radius: 10)
                             .padding()
                             .background(Color.white)
-                            .cornerRadius(20)
+                            .cornerRadius(30)
                         
                         // Circle with the image in the center
                         Image("qrimage")  // Replace with your image name or a UIImage reference
@@ -61,35 +61,39 @@ struct ProfileView: View {
                         .frame(width: 200, height: 200)
                         .foregroundColor(.gray)
                 }
-
+                
+                Spacer().frame(height: 50)
 
                 
-                NavigationLink(destination: FriendsView(friends: friends)) {
-                    Text("Friends")
-                        .bold()
-                        .padding()
-                        .background(Color.black)
-                        .foregroundColor(.white)
-                        .cornerRadius(15)
+                HStack(spacing: 20) {
+                    NavigationLink(destination: FriendsView(friends: friends)) {
+                        Label("Friends", systemImage: "person.2.fill")
+                            .bold()
+                            .padding()
+                            .frame(maxWidth: 150)
+                            .background(Color.black)
+                            .foregroundColor(.white)
+                            .cornerRadius(15)
+                    }
+
+                    Button(action: {
+                        showLogoutConfirmation = true
+                    }) {
+                        Label("Log Out", systemImage: "arrow.right.circle.fill")
+                            .bold()
+                            .padding()
+                            .frame(maxWidth: 150)
+                            .background(Color.black)
+                            .foregroundColor(.white)
+                            .cornerRadius(15)
+                    }
                 }
                 .padding(.top, 16)
-                
-                Button(action: {
-                    showLogoutConfirmation = true
-                }) {
-                    Text("Log Out")
-                        .bold()
-                        .padding()
-                        .background(Color.black)
-                        .foregroundColor(.white)
-                        .cornerRadius(15)
-                }
-                .padding(.top, 16)
+
+
                 
                 if isLoading {
-                    ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle())
-                        .padding()
+                    //ProgressView()
                 }
                 
                 if let errorMessage = errorMessage {
