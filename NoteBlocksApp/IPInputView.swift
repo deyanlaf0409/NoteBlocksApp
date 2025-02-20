@@ -6,117 +6,67 @@ struct IPInputView: View {
     @State private var showSafariView = false
     @State private var isSubscribed = false
 
-    // Hardcoded IP address
-    let hardcodedIPAddress = "192.168.0.222" // Replace with your actual IP
+    let hardcodedIPAddress = "192.168.0.222"
 
     var body: some View {
-        VStack {
-            // Title before subscription, Disclaimer after
+        VStack(spacing: 0) {  // Set spacing to 0 to ensure no space between elements
+            // Title at the top with reduced padding
             Text(isSubscribed ? "⚠️  Important Disclaimer" : "Unlock a World Without Limits!")
-                .font(.headline)
-                .padding()
+                .font(.title2)
+                .padding(.top, 5) // Slight top padding to ensure it’s not too close to the top edge
 
-            // Show rules only after subscribing
-            if isSubscribed {
-                VStack(alignment: .leading, spacing: 15) {
-                    HStack {
-                        Image(systemName: "exclamationmark.shield.fill")
-                            .foregroundColor(.primary)
-                            .font(.system(size: 22)) // Larger icon size
-                        Text("Protect Your Privacy")
-                            .font(.system(size: 20, weight: .bold))
-                            .foregroundColor(.primary)
-                    }
-                    Text("Never share personal data, passwords, or your home address.")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(.primary)
-                        .padding(.bottom, 20)
-
-                    HStack {
-                        Image(systemName: "checkmark.shield.fill")
-                            .foregroundColor(.primary)
-                            .font(.system(size: 22))
-                        Text("Follow the Rules")
-                            .font(.system(size: 20, weight: .bold))
-                            .foregroundColor(.primary)
-                    }
-                    Text("Respect the guidelines and help keep our community safe and welcoming for everyone.")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(.primary)
-                        .padding(.bottom, 20)
-                    
-                    HStack {
-                        Image(systemName: "person.2.wave.2.fill")
-                            .foregroundColor(.primary)
-                            .font(.system(size: 22))
-                        Text("Here for You")
-                            .font(.system(size: 20, weight: .bold))
-                            .foregroundColor(.primary)
-                    }
-                    Text("If anything feels off, contact our support team—we’re happy to help!")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(.primary)
-                        .padding(.bottom, 20)
-                }
-                .padding()
-                .background(Color(.systemGray6))
-                .cornerRadius(10)
-                .padding(.horizontal)
+            if !isSubscribed {
+                Image("subscribe")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 300, height: 300) // Explicit width and height, adjust as needed
+                    .clipped() // To make sure it doesn't stretch
+                    .opacity(0.9)
             }
 
 
-            // Conditional button (Start Subscription OR Sign In)
-            if isSubscribed {
-                Button("Sign In") {
-                    checkSubscriptionStatus()
-                }
-                .font(.system(size: 18, weight: .bold, design: .rounded))
-                .padding(.vertical, 10)
-                .padding(.horizontal, 14)
-                .frame(maxWidth: 200)
-                .background(Color.black)
-                .foregroundColor(.white)
-                .cornerRadius(15)
-
-            } else {
+            // The button placed immediately after the image with no space
+            if !isSubscribed {
                 Button("🎉 Let's Go ! 🥳") {
                     startSubscription()
                 }
-                .font(.system(size: 18, weight: .bold, design: .rounded))
-                .padding(.vertical, 12)
-                .padding(.horizontal, 20)
-                .frame(maxWidth: 240)
-                .background(LinearGradient(gradient: Gradient(colors: [Color.red, Color.pink]), startPoint: .topLeading, endPoint: .bottomTrailing))
-                .foregroundColor(.white)
-                .cornerRadius(25)
-                .shadow(color: Color.red.opacity(0.5), radius: 10, x: 0, y: 4)
+                .styledPrimaryButton()
+                .padding(.top, 0) // No extra space between image and button
             }
 
-            // Show subscription benefits before subscribing
+            // Features displayed before subscription (if not subscribed)
             if !isSubscribed {
-                VStack(alignment: .leading, spacing: 15) {
+                VStack(alignment: .center, spacing: 18) {
                     Text("Your VIP Pass to Productivity")
-                        .font(.title2)
+                        .font(.title2) // Slightly bigger title
                         .bold()
-                        .padding(.bottom, 10)
+                        .padding(.bottom, 8)
 
-                    FeatureRow(icon: "paperplane", text: "Fast send to all your friends and team members", iconColor: .primary)
-                    FeatureRow(icon: "person.3", text: "Access to the NoteBlocks community", iconColor: .primary)
-                    FeatureRow(icon: "nosign", text: "No ads or interruptions", iconColor: .primary)
-                    FeatureRow(icon: "desktopcomputer", text: "Accessible from any device", iconColor: .primary)
-                    FeatureRow(icon: "checkmark.icloud.fill", text: "Unlimited cloud storage", iconColor: .primary)
-                    FeatureRow(icon: "infinity", text: "Unlimited account number", iconColor: .primary)
-                    FeatureRow(icon: "arrow.triangle.2.circlepath", text: "24/7 Synchronization and backup", iconColor: .primary)
-                    FeatureRow(icon: "message", text: "Priority support", iconColor: .primary)
-                    FeatureRow(icon: "sparkles", text: "Access to every new feature", iconColor: .yellow)
+                    // Grouped Features in a Grid
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 15) {
+                        FeatureRow(icon: "paperplane", text: "Fast send to friends")
+                        FeatureRow(icon: "person.3", text: "Join the NoteBlocks community")
+                        FeatureRow(icon: "nosign", text: "No ads or interruptions")
+                        FeatureRow(icon: "desktopcomputer", text: "Access on any device")
+                        FeatureRow(icon: "checkmark.icloud.fill", text: "Unlimited cloud storage")
+                        FeatureRow(icon: "infinity", text: "Unlimited accounts")
+                        FeatureRow(icon: "arrow.triangle.2.circlepath", text: "24/7 Sync & Backup")
+                        FeatureRow(icon: "message", text: "Priority support")
+                    }
+                    .padding(.horizontal)
+
+                    // The 9th Feature at the Bottom, Centered
+                    FeatureRow(icon: "sparkles", text: "Access every new feature")
+                        .foregroundColor(.yellow)
+                        .padding(.top, 18)
+                        .frame(maxWidth: .infinity, alignment: .center)
                 }
-                .padding(.horizontal)
                 .padding(.top, 25)
             }
 
             Spacer()
         }
-        .padding()
+        .padding([.leading, .trailing], 0) // Remove horizontal padding from the parent VStack
         .onAppear {
             checkSubscriptionStatus()
         }
@@ -130,32 +80,96 @@ struct IPInputView: View {
         }
     }
 
-    // Function to check subscription status
+
     private func checkSubscriptionStatus() {
         if isSubscribed {
             showSafariView = true
         }
     }
 
-    // Function to initiate subscription process
     private func startSubscription() {
         isSubscribed = true
     }
 }
 
+// MARK: - Disclaimer View
+struct DisclaimerView: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            DisclaimerItem(icon: "exclamationmark.shield.fill", title: "Protect Your Privacy", description: "Never share personal data or passwords.")
+            DisclaimerItem(icon: "checkmark.shield.fill", title: "Follow the Rules", description: "Respect the guidelines and keep it safe for everyone.")
+            DisclaimerItem(icon: "person.2.wave.2.fill", title: "Here for You", description: "If anything feels off, contact our support team!")
+        }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(12)
+        .padding(.horizontal)
+    }
+}
+
+struct DisclaimerItem: View {
+    let icon: String
+    let title: String
+    let description: String
+
+    var body: some View {
+        VStack(alignment: .leading) {
+            HStack {
+                Image(systemName: icon)
+                    .foregroundColor(.primary)
+                    .font(.system(size: 22)) // Slightly bigger icon
+                Text(title)
+                    .font(.system(size: 20, weight: .bold)) // Bigger title
+                    .foregroundColor(.primary)
+            }
+            Text(description)
+                .font(.system(size: 18, weight: .medium)) // Slightly bigger text
+                .foregroundColor(.primary)
+                .padding(.bottom, 10)
+        }
+    }
+}
+
+// MARK: - FeatureRow (For Grid)
 struct FeatureRow: View {
     let icon: String
     let text: String
-    let iconColor: Color
 
     var body: some View {
         HStack {
             Image(systemName: icon)
-                .foregroundColor(iconColor)
-                .font(.title)
+                .foregroundColor(.primary)
+                .font(.system(size: 20)) // Slightly bigger icon
             Text(text)
                 .foregroundColor(.primary)
+                .font(.system(size: 18)) // Slightly bigger text
         }
+    }
+}
+
+// MARK: - Button Styles
+extension View {
+    func styledButton() -> some View {
+        self
+            .font(.system(size: 18, weight: .bold, design: .rounded))
+            .padding(.vertical, 10)
+            .padding(.horizontal, 14)
+            .frame(maxWidth: 200)
+            .background(Color.black)
+            .foregroundColor(.white)
+            .cornerRadius(14)
+    }
+
+    func styledPrimaryButton() -> some View {
+        self
+            .font(.system(size: 18, weight: .bold, design: .rounded))
+            .padding(.vertical, 12)
+            .padding(.horizontal, 22)
+            .frame(maxWidth: 240)
+            .background(LinearGradient(gradient: Gradient(colors: [Color.red, Color.pink]), startPoint: .topLeading, endPoint: .bottomTrailing))
+            .foregroundColor(.white)
+            .cornerRadius(24)
+            .shadow(color: Color.red.opacity(0.5), radius: 9, x: 0, y: 3)
     }
 }
 
