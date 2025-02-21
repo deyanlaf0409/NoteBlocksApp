@@ -21,8 +21,9 @@ struct FolderView: View {
                     Image("folders") // Image should render here
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 220, height: 220)
+                        .frame(width: 250, height: 250)
                         .opacity(0.9)
+                        .padding(.top, 1)
                 } else {
                     Text("Image not found")
                         .foregroundColor(.red)
@@ -35,7 +36,7 @@ struct FolderView: View {
                             .background(RoundedRectangle(cornerRadius: 25).fill(Color(.systemGray6)))
                             .padding(.horizontal, 5)
                             .frame(width: 200) // Adjust width to your preference
-                            .padding(.top, 15)
+                            .padding(.top, 1)
                         
                     Button(action: {
                         if !newFolderName.isEmpty {
@@ -54,7 +55,7 @@ struct FolderView: View {
                             .cornerRadius(15) // Slightly smaller corner radius for a compact look
                     }
 
-                        .padding(.top, 15) // Adjust the padding to align with the text field
+                        .padding(.top, 1) // Adjust the padding to align with the text field
                     }
                     .padding(.horizontal, 10) // To make sure the HStack has proper padding
 
