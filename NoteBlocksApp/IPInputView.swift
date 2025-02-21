@@ -70,7 +70,7 @@ struct IPInputView: View {
                             Spacer() // Pushes content to center
                         }
                         .frame(maxWidth: .infinity) // Ensures full width usage
-                        .padding(.top, 10)
+                        .padding(.top, 5)
 
                     }
                     .padding(.top, 25)
@@ -90,7 +90,7 @@ struct IPInputView: View {
                 .background(.black)
                 .foregroundColor(.white)
                 .cornerRadius(24)
-                .padding(.top, 18)
+                .padding(.top, 3)
             }
 
             Spacer()
