@@ -13,7 +13,7 @@ struct IPInputView: View {
             // Title at the top with reduced padding
             Text(isSubscribed ? "⚠️  Important Disclaimer" : "Unlock a World Without Limits!")
                 .font(.title2)
-                .padding(.top, 5) // Slight top padding to ensure it’s not too close to the top edge
+                .padding(.top, 7) // Slight top padding to ensure it’s not too close to the top edge
 
             if isSubscribed {
                 // Show the disclaimer content if subscribed
@@ -36,7 +36,7 @@ struct IPInputView: View {
                         startSubscription()
                     }
                     .styledPrimaryButton()
-                    .padding(.top, 3) // No extra space between image and button
+                    .padding(.top, 10) // No extra space between image and button
                 }
 
                 // Features displayed before subscription (if not subscribed)
@@ -46,6 +46,7 @@ struct IPInputView: View {
                             .font(.title2) // Slightly bigger title
                             .bold()
                             .padding(.bottom, 8)
+                            .padding(.top, 0)
 
                         // Grouped Features in a Grid
                         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 15) {
@@ -62,9 +63,15 @@ struct IPInputView: View {
                         .padding(.top, 3)
 
                         // The 9th Feature at the Bottom, Centered
-                        FeatureRow(icon: "sparkles", text: "Access every new feature", isSpecial: true) // Set isSpecial to true for yellow
-                            .padding(.top, 10)
-                            .frame(maxWidth: .infinity, alignment: .center)
+                        // Center only the last feature row
+                        HStack {
+                            Spacer() // Pushes content to center
+                            FeatureRow(icon: "sparkles", text: "Access every new feature", isSpecial: true)
+                            Spacer() // Pushes content to center
+                        }
+                        .frame(maxWidth: .infinity) // Ensures full width usage
+                        .padding(.top, 10)
+
                     }
                     .padding(.top, 25)
                 }
@@ -167,16 +174,35 @@ struct FeatureRow: View {
     var isSpecial: Bool = false
 
     var body: some View {
-        HStack {
-            Image(systemName: icon)
-                            .foregroundColor(isSpecial ? .yellow : .primary) // Apply yellow if it's the special case
-                            .font(.system(size: 20)) // Slightly bigger icon
-            Text(text)
-                .foregroundColor(.primary)
-                .font(.system(size: 16)) // Slightly bigger text
+        HStack(spacing: 12) {
+            if !isSpecial {
+                Image(systemName: icon)
+                    .foregroundColor(.primary)
+                    .font(.system(size: 22))
+                    .frame(width: 30, alignment: .leading)
+
+                Text(text)
+                    .foregroundColor(.primary)
+                    .font(.system(size: 16))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                Spacer() // Push to center
+                HStack(spacing: 8) { // Group icon & text together
+                    Image(systemName: icon)
+                        .foregroundColor(.yellow)
+                        .font(.system(size: 22))
+                    Text(text)
+                        .foregroundColor(.primary)
+                        .font(.system(size: 16))
+                }
+                Spacer() // Push to center
+            }
         }
+        .padding(.leading, isSpecial ? 0 : 20) // Move normal rows slightly right
     }
 }
+
+
 
 // MARK: - Button Styles
 extension View {
