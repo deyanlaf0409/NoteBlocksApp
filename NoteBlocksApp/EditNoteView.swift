@@ -2,11 +2,6 @@ import SwiftUI
 import UserNotifications
 import LocalAuthentication
 
-import SwiftUI
-import Vision
-import VisionKit
-
-
 struct EditNoteView: View {
     @Binding var note: Note
     @Environment(\.presentationMode) var presentationMode
@@ -73,8 +68,8 @@ struct EditNoteView: View {
             
             
             NoteBody(text: $editedBody)
-                .padding(.top, 0)   // Removed any additional top padding
-                .padding(.bottom, 0)
+                .padding(.top, 5)   // Removed any additional top padding
+                .padding(.bottom, 5)
 
             
             VStack  {
@@ -131,7 +126,6 @@ struct EditNoteView: View {
                     .buttonStyle(CustomButtonStyle())
                 }
                 .padding(.horizontal)
-                
                 
                 if let reminderDate = reminderDate {
                     VStack {
