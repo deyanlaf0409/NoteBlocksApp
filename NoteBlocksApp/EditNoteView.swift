@@ -2,6 +2,11 @@ import SwiftUI
 import UserNotifications
 import LocalAuthentication
 
+import SwiftUI
+import Vision
+import VisionKit
+
+
 struct EditNoteView: View {
     @Binding var note: Note
     @Environment(\.presentationMode) var presentationMode
@@ -11,6 +16,10 @@ struct EditNoteView: View {
     @State private var reminderDate: Date? = nil
     @State private var showingReminderSheet: Bool = false
     @State private var selectedFolderId: UUID?
+    
+    @State private var editedBody: String = ""
+    @State private var editedMedia: [Data] = []
+    
 
     var body: some View {
         VStack {
@@ -61,8 +70,14 @@ struct EditNoteView: View {
                 }
             }
             .padding(.horizontal)
+            
+            
+            NoteBody(text: $editedBody)
+                .padding(.top, 0)   // Removed any additional top padding
+                .padding(.bottom, 0)
 
-            VStack {
+            
+            VStack  {
                 HStack {
                     Button(action: { showingReminderSheet.toggle() }) {
                         VStack {
@@ -117,6 +132,7 @@ struct EditNoteView: View {
                 }
                 .padding(.horizontal)
                 
+                
                 if let reminderDate = reminderDate {
                     VStack {
                         Text("Reminder set for: \(reminderDate, formatter: dateFormatter)")
@@ -150,6 +166,10 @@ struct EditNoteView: View {
                     if success {
                         // Authentication succeeded, allow access to the note
                         editedText = note.text
+                        
+                        editedBody = note.body
+                        editedMedia = note.media
+                        
                         reminderDate = note.reminderDate
                         noteStore.loadFolders()
                         selectedFolderId = note.folderID
@@ -161,6 +181,10 @@ struct EditNoteView: View {
             } else {
                 // If the note is not locked, proceed as usual
                 editedText = note.text
+                
+                editedBody = note.body
+                editedMedia = note.media
+                
                 reminderDate = note.reminderDate
                 noteStore.loadFolders()
                 selectedFolderId = note.folderID
@@ -174,6 +198,9 @@ struct EditNoteView: View {
 
     private func saveNote() {
         note.text = editedText
+        
+        note.body = editedBody
+        note.media = editedMedia
         
         if let folderId = selectedFolderId {
             note.folderID = folderId
