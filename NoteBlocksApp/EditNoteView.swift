@@ -4,6 +4,7 @@ import LocalAuthentication
 
 struct EditNoteView: View {
     @Binding var note: Note
+    let username: String
     @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject var noteStore: NoteStore
 
@@ -14,6 +15,8 @@ struct EditNoteView: View {
     
     @State private var editedBody: String = ""
     @State private var editedMedia: [Data] = []
+    @State private var showingMediaSheet: Bool = false
+    @State private var showLoginModal = false
     
 
     var body: some View {
@@ -32,6 +35,8 @@ struct EditNoteView: View {
             .padding(.horizontal, 10)
             
             HStack {
+                Image(systemName: "folder.fill")
+                        .foregroundColor(.primary)
                 Text("Folder:")
                     .font(.body)
                 
@@ -101,6 +106,40 @@ struct EditNoteView: View {
                 .padding(.horizontal)
 
                 HStack {
+                    
+                    Button(action: { showingMediaSheet.toggle() }) {
+                        VStack {
+                            Image(systemName: "photo.on.rectangle")
+                                .foregroundColor(.orange)
+                                .font(.system(size: 24))
+                            Text("Image")
+                                .font(.footnote)
+                                .foregroundColor(.primary)
+                        }
+                    }
+                    .buttonStyle(CustomButtonStyle())
+                    
+                    Button(action: {
+                        if username == "Guest" { // Replace with actual authentication logic
+                            showLoginModal.toggle()
+                        } else {
+                            // Future functionality for logged-in users
+                        }
+                    }) {
+                        VStack {
+                            Image(systemName: "globe")
+                                .foregroundColor(.gray)
+                                .font(.system(size: 24))
+                            Text("Share")
+                                .font(.footnote)
+                                .foregroundColor(.primary)
+                        }
+                    }
+                    .buttonStyle(CustomButtonStyle())
+                    .sheet(isPresented: $showLoginModal) {
+                        GuestLoginPromptView() // A modal for guest users
+                    }
+                    
                     Button(action: toggleHighlight) {
                         VStack {
                             Image(systemName: note.highlighted ? "star.fill" : "star")
@@ -112,7 +151,23 @@ struct EditNoteView: View {
                         }
                     }
                     .buttonStyle(CustomButtonStyle())
-
+                }
+                .padding(.horizontal)
+                
+                HStack {
+                    
+                    Button(action: { /* Share functionality here */ }) {
+                        VStack {
+                            Image(systemName: "paperplane")
+                                .foregroundColor(.orange)
+                                .font(.system(size: 24))
+                            Text("Send to")
+                                .font(.footnote)
+                                .foregroundColor(.primary)
+                        }
+                    }
+                    .buttonStyle(CustomButtonStyle())
+                    
                     Button(action: saveNote) {
                         VStack {
                             Image(systemName: "checkmark.circle.fill")
@@ -124,7 +179,7 @@ struct EditNoteView: View {
                         }
                     }
                     .buttonStyle(CustomButtonStyle())
-                }
+                    }
                 .padding(.horizontal)
                 
                 if let reminderDate = reminderDate {
@@ -188,6 +243,9 @@ struct EditNoteView: View {
         .sheet(isPresented: $showingReminderSheet) {
             ReminderPicker(reminderDate: $reminderDate)
         }
+        .sheet(isPresented: $showingMediaSheet) {
+                    MediaPickerView(editedMedia: $editedMedia)
+                }
     }
 
     private func saveNote() {

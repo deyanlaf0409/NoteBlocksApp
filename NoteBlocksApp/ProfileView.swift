@@ -50,7 +50,7 @@ struct ProfileView: View {
                         Image("qrimage")  // Replace with your image name or a UIImage reference
                             .resizable()
                             .scaledToFit()
-                            .frame(width: 40, height: 40)  // Size of the circle image
+                            .frame(width: 45, height: 45)  // Size of the circle image
                             .clipShape(Circle())  // Clips the image to a circular shape
                             .overlay(Circle().stroke(Color.black, lineWidth: 4))  // Optional: Adds a white border around the circle
                     }

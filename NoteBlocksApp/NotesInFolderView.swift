@@ -10,6 +10,7 @@ import SwiftUI
 struct NotesInFolderView: View {
     @EnvironmentObject var noteStore: NoteStore
     @State private var newFolderName = ""
+    @State private var loggedInUser: String? = UserDefaults.standard.string(forKey: "loggedInUser")
     var folder: Folder
 
     var body: some View {
@@ -46,7 +47,7 @@ struct NotesInFolderView: View {
             // Notes list
             List {
                 ForEach(noteStore.notes.filter { $0.folderID == folder.id }) { note in
-                    NavigationLink(destination: EditNoteView(note: $noteStore.notes[noteStore.notes.firstIndex(where: { $0.id == note.id })!])) {
+                    NavigationLink(destination: EditNoteView(note: $noteStore.notes[noteStore.notes.firstIndex(where: { $0.id == note.id })!], username: loggedInUser ?? "Guest")) {
                         VStack(alignment: .leading) {
                             Text(note.text)
                                 .font(.headline)

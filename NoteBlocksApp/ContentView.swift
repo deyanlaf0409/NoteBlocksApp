@@ -366,10 +366,11 @@ struct ContentView: View {
     private func noteRow(note: Note) -> some View {
         ZStack {
             // NavigationLink that directly passes a binding to the note
-                NavigationLink(destination: EditNoteView(note: $noteStore.notes[noteStore.notes.firstIndex(where: { $0.id == note.id })!])) {
-                    EmptyView()
-                }
-                .opacity(0)
+            NavigationLink(destination: EditNoteView(note: $noteStore.notes[noteStore.notes.firstIndex(where: { $0.id == note.id })!], username: username)) {
+                EmptyView()
+            }
+            .opacity(0)
+
 
             
             HStack {
