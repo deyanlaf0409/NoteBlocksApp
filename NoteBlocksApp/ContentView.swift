@@ -1,5 +1,24 @@
 import SwiftUI
 
+extension Color {
+    init(hex: String) {
+        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        var int: UInt64 = 0
+        Scanner(string: hex).scanHexInt64(&int)
+        let a, r, g, b: Double
+        switch hex.count {
+        case 6: // RGB (no alpha)
+            (a, r, g, b) = (1, Double((int >> 16) & 0xFF) / 255, Double((int >> 8) & 0xFF) / 255, Double(int & 0xFF) / 255)
+        case 8: // RGBA
+            (a, r, g, b) = (Double((int >> 24) & 0xFF) / 255, Double((int >> 16) & 0xFF) / 255, Double((int >> 8) & 0xFF) / 255, Double(int & 0xFF) / 255)
+        default:
+            (a, r, g, b) = (1, 1, 1, 1) // Default to white if invalid
+        }
+        self = Color(red: r, green: g, blue: b, opacity: a)
+    }
+}
+
+
 struct ContentView: View {
     @EnvironmentObject var noteStore: NoteStore
     @EnvironmentObject var networkMonitor: NetworkMonitor
@@ -317,7 +336,7 @@ struct ContentView: View {
             Circle()
                 .fill(
                     LinearGradient(
-                        gradient: Gradient(colors: [.orange, .yellow]), // Using system pink color
+                        gradient: Gradient(colors: [Color(hex: "#FFB27F"), Color(hex: "#FFB27F")]), // Orange and Yellow in Hex
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
@@ -326,9 +345,10 @@ struct ContentView: View {
                 .overlay(
                     Image(systemName: "plus")
                         .font(.system(size: 25, weight: .bold))
-                        .foregroundColor(colorScheme == .dark ? .black : .white)
+                        .foregroundColor(colorScheme == .dark ? Color(hex: "#000000") : Color(hex: "#FFFFFF"))
                 )
-                .shadow(color: Color.orange.opacity(0.2), radius: 2, x: 0, y: 2)
+                .shadow(color: Color(hex: "#FFB27F").opacity(0.2), radius: 2, x: 0, y: 2)
+
 
 
         }
