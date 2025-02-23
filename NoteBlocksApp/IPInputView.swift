@@ -57,7 +57,7 @@ struct IPInputView: View {
                             FeatureRow(icon: "checkmark.icloud.fill", text: "Unlimited cloud storage")
                             FeatureRow(icon: "infinity", text: "Unlimited accounts")
                             FeatureRow(icon: "arrow.triangle.2.circlepath", text: "24/7 Sync & Backup")
-                            FeatureRow(icon: "message", text: "Priority support")
+                            FeatureRow(icon: "message.fill", text: "Priority support")
                         }
                         .padding(.horizontal)
                         .padding(.top, 3)
