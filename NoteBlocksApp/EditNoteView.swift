@@ -35,7 +35,10 @@ struct EditNoteView: View {
             .padding(.horizontal, 10)
             
             HStack {
-                Image(systemName: "folder.fill")
+                Image("folder") // Replace with your actual image asset name
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 27, height: 27) // Match system image size
                         .foregroundColor(.primary)
                 Text("Folder:")
                     .font(.body)
@@ -73,17 +76,20 @@ struct EditNoteView: View {
             
             
             NoteBody(text: $editedBody)
-                .padding(.top, 5)   // Removed any additional top padding
-                .padding(.bottom, 5)
+                .padding(.top, 3)   // Removed any additional top padding
+                .padding(.bottom, 3)
 
             
             VStack  {
                 HStack {
                     Button(action: { showingReminderSheet.toggle() }) {
                         VStack {
-                            Image(systemName: "calendar.badge.clock")
-                                .foregroundColor(.orange)
-                                .font(.system(size: 24))
+                            Image("reminder")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 24, height: 24) // Base size
+                                .scaleEffect(1.4) // Increase size without affecting layout
+                            
                             Text("Reminder")
                                 .font(.footnote)
                                 .foregroundColor(.primary)
@@ -106,13 +112,15 @@ struct EditNoteView: View {
                 .padding(.horizontal)
 
                 HStack {
-                    
                     Button(action: { showingMediaSheet.toggle() }) {
                         VStack {
-                            Image(systemName: "photo.on.rectangle")
-                                .foregroundColor(.orange)
-                                .font(.system(size: 24))
-                            Text("Image")
+                            Image("imagemenu")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 24, height: 24) // Base size
+                                .scaleEffect(1.4) // Increase size without affecting layout
+                            
+                            Text("Media")
                                 .font(.footnote)
                                 .foregroundColor(.primary)
                         }
@@ -127,9 +135,11 @@ struct EditNoteView: View {
                         }
                     }) {
                         VStack {
-                            Image(systemName: "globe")
-                                .foregroundColor(.gray)
-                                .font(.system(size: 24))
+                            Image("share")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 24, height: 24) // Base size
+                                .scaleEffect(1.4)
                             Text("Share")
                                 .font(.footnote)
                                 .foregroundColor(.primary)
@@ -156,17 +166,27 @@ struct EditNoteView: View {
                 
                 HStack {
                     
-                    Button(action: { /* Share functionality here */ }) {
+                    Button(action: { if username == "Guest" { // Replace with actual authentication logic
+                        showLoginModal.toggle()
+                    } else {
+                        // Future functionality for logged-in users
+                    } }) {
                         VStack {
-                            Image(systemName: "paperplane")
+                            Image("paperplane")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 24, height: 24) // Base size
+                                .scaleEffect(1.5) // Increase size without affecting layout
                                 .foregroundColor(.orange)
-                                .font(.system(size: 24))
+                            
                             Text("Send to")
                                 .font(.footnote)
                                 .foregroundColor(.primary)
                         }
                     }
                     .buttonStyle(CustomButtonStyle())
+
+
                     
                     Button(action: saveNote) {
                         VStack {

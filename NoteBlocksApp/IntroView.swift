@@ -26,18 +26,32 @@ struct IntroView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
-                // Image that switches based on the system's color scheme
+                Spacer()
+
+                // App Logo (changes based on light/dark mode)
                 Image(colorScheme == .dark ? "whitelogo" : "blacklogo")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 100, height: 100)
 
+                // App Header
                 Text("Welcome to NoteBlocks")
-                    .font(.largeTitle)
-                    .padding()
+                    .font(.custom("AmericanTypewriter-Bold", size: 35)) // Replace with your preferred font
+                    .padding(.top, 1)
+                    .padding(.bottom, 1)
 
+
+                
+                Image("index")  // Replace with your image asset name
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 275, height: 275)
+                    .cornerRadius(10)
+                    .padding(.top, 1)
+                    
+
+                // Log In Button
                 Button(action: {
-                    // Check for internet connection before allowing login
                     if networkMonitor.isConnected {
                         showIPInputModal = true
                     } else {
@@ -46,47 +60,39 @@ struct IntroView: View {
                 }) {
                     Text("Log In")
                         .font(.system(size: 18, weight: .bold, design: .rounded))
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 12)
-                        .frame(maxWidth: 150)
-                        .background(
-                            LinearGradient(
-                                gradient: Gradient(colors: [Color.black, Color.black]),
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .foregroundColor(.white)
-                        .cornerRadius(15)
+                                                .padding(.vertical, 8)
+                                                .padding(.horizontal, 12)
+                                                .padding(.top, 3)
+                                                .frame(maxWidth: 150)
+                                                .background(Color.black)
+                                                .foregroundColor(.white)
+                                                .cornerRadius(15)
                 }
                 .sheet(isPresented: $showIPInputModal) {
                     IPInputView()
                 }
 
+                // Continue as Guest Button
                 Button(action: {
-                    // Set guest mode in UserDefaults
                     UserDefaults.standard.set(true, forKey: "isLoggedIn")
                     UserDefaults.standard.set(nil, forKey: "loggedInUser")
 
-                    showNotes = true // Move to ContentView
+                    showNotes = true
                 }) {
                     Text("Continue as Guest")
                         .font(.system(size: 18, weight: .bold, design: .rounded))
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 12)
-                        .frame(maxWidth: 150)
-                        .background(
-                            LinearGradient(
-                                gradient: Gradient(colors: [Color.black, Color.black]),
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .foregroundColor(.white)
-                        .cornerRadius(15)
+                                                .padding(.vertical, 8)
+                                                .padding(.horizontal, 12)
+                                                .frame(maxWidth: 150)
+                                                .background(Color.black)
+                                                .foregroundColor(.white)
+                                                .cornerRadius(15)
                 }
 
                 Spacer()
+                
+                // Bottom Text
+                bottomTextWithIcon
             }
             .padding()
             .navigationDestination(isPresented: $showNotes) {
@@ -98,6 +104,16 @@ struct IntroView: View {
                       dismissButton: .default(Text("OK")))
             }
         }
+    }
+    
+    private var bottomTextWithIcon: some View {
+        HStack {
+            Text("© 2025 NoteBlocks")
+                .font(.system(size: 12))
+                .foregroundColor(.gray)
+        }
+        .frame(maxWidth: .infinity, alignment: .center)
+        .padding(.bottom, 10)
     }
 }
 

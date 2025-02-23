@@ -7,11 +7,12 @@
 import SwiftUI
 
 struct MediaPickerView: View {
+    @Environment(\.presentationMode) var presentationMode
     @Binding var editedMedia: [Data]
 
     var body: some View {
         VStack(spacing: 20) {
-            Text("Upload Image")
+            Text("Block Image")
                 .font(.headline)
                 .padding(.top)
 
@@ -30,13 +31,14 @@ struct MediaPickerView: View {
                     .frame(width: 335, height: 335)
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                     .padding()
+                    .opacity(0.9)
             }
 
             // First Row: Upload & Take Image
             HStack {
                 Button(action: uploadImage) {
                     VStack {
-                        Image(systemName: "photo.on.rectangle")
+                        Image(systemName: "plus")
                             .foregroundColor(.orange)
                             .font(.system(size: 24))
                         Text("Upload Image")
@@ -74,7 +76,7 @@ struct MediaPickerView: View {
                 }
                 .buttonStyle(CustomButtonStyle())
 
-                Button(action: { /* Logic to close the sheet */ }) {
+                Button(action: { presentationMode.wrappedValue.dismiss() }) {
                     VStack {
                         Image(systemName: "xmark.circle.fill")
                             .foregroundColor(.gray)
@@ -105,6 +107,7 @@ struct MediaPickerView: View {
     private func removeImage() {
         editedMedia.removeAll()
     }
+    
 }
 
 

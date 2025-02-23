@@ -71,8 +71,11 @@ struct FolderView: View {
                         ForEach(noteStore.folders) { folder in
                             NavigationLink(destination: NotesInFolderView(folder: folder)) {
                                 HStack {
-                                    Image(systemName: "folder.fill")
-                                        .foregroundColor(.primary)
+                                    Image("folder") // Replace with your actual image asset name
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 27, height: 27) // Match system image size
+                                            .foregroundColor(.primary)
                                     Text(folder.name)
 
                                     let noteCount = noteStore.notes.filter { $0.folderID == folder.id }.count

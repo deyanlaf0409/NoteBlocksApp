@@ -22,7 +22,8 @@ struct GuestLoginPromptView: View {
             Image("explore") // Replace with your actual asset name
                 .resizable()
                 .scaledToFit()
-                .frame(width: 300, height: 300)
+                .frame(width: 335, height: 335)
+                .opacity(0.9)
 
             // Large Title
             Text("Sign in to Your Account and Start the Party! 🎉")
