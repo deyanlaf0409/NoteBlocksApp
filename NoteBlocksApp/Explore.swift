@@ -13,7 +13,7 @@ struct GuestLoginPromptView: View {
     var body: some View {
         VStack(spacing: 20) {
             // Top title
-            Text("Ready to Jump in the fun part ?")
+            Text("Ready to Jump in the Fun part ?")
                 .font(.title3)
                 .fontWeight(.semibold)
                 .padding(.top, 20)
@@ -26,14 +26,14 @@ struct GuestLoginPromptView: View {
                 .opacity(0.9)
 
             // Large Title
-            Text("Sign in to Your Account and Start the Party! 🎉")
+            Text("Create your Account Now to Start the Party! 🎉")
                 .font(.title)
                 .fontWeight(.bold)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 30)
 
             // Cancel Button
-            Button("Cancel") {
+            Button("Back") {
                 presentationMode.wrappedValue.dismiss()
             }
             .font(.system(size: 18, weight: .bold, design: .rounded))

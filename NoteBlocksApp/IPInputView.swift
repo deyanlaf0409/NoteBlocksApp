@@ -223,10 +223,10 @@ extension View {
             .padding(.vertical, 12)
             .padding(.horizontal, 22)
             .frame(maxWidth: 240)
-            .background(LinearGradient(gradient: Gradient(colors: [Color.red, Color.pink]), startPoint: .topLeading, endPoint: .bottomTrailing))
+            .background(LinearGradient(gradient: Gradient(colors: [Color.black, Color.black]), startPoint: .topLeading, endPoint: .bottomTrailing))
             .foregroundColor(.white)
             .cornerRadius(24)
-            .shadow(color: Color.red.opacity(0.5), radius: 9, x: 0, y: 3)
+            .shadow(color: Color.black.opacity(0.5), radius: 9, x: 0, y: 3)
     }
 }
 

@@ -32,6 +32,13 @@ struct ContentView: View {
     @State private var showIPInputModal = false
     @State private var showProfileModal = false
     @State private var showLogoutConfirmation = false
+    
+    @State private var randomImageIndex = Int.random(in: 0..<7)
+
+        private let profileImages = [
+            "profile1", "profile2", "profile3",
+            "profile4", "profile5", "profile6", "profile7"
+        ]
 
     let username: String
     var onLogout: () -> Void = {
@@ -78,7 +85,9 @@ struct ContentView: View {
                 }
                 
                 Spacer()
-                
+                    .onAppear {
+                        randomImageIndex = Int.random(in: 0..<7)
+                    }
                 bottomTextWithIcon
             }
         }
@@ -150,7 +159,7 @@ struct ContentView: View {
         VStack {
             HStack {
                 NavigationLink(destination: ArchiveView(noteStore: noteStore)) {
-                    navigationButton(icon: "archivebox", label: "Archive")
+                    navigationButton(icon: "archivebutton", label: "Archive")
                 }
 
                 NavigationLink(destination: FolderView().environmentObject(noteStore)) {
@@ -173,7 +182,7 @@ struct ContentView: View {
 
     private func navigationButton(icon: String, label: String) -> some View {
         VStack {
-            Image(systemName: icon)
+            Image(icon)
                 .resizable()
                 .scaledToFit()
                 .frame(width: 50, height: 50)
@@ -189,14 +198,16 @@ struct ContentView: View {
     
     private var profileButton: some View {
         Button(action: {
+            randomImageIndex = Int.random(in: 0..<7)
             showProfileModal = true // Trigger the modal when tapped
         }) {
             VStack {
-                Image(systemName: "person.crop.circle")
+                Image(profileImages[randomImageIndex])
                     .resizable()
                     .scaledToFit()
                     .frame(width: 50, height: 50)
-                    .foregroundColor(Color.primary)
+                    .scaleEffect(1.3)
+                    
 
                 Text("Profile")
                     .font(.system(size: 14, weight: .bold, design: .rounded))
@@ -217,14 +228,15 @@ struct ContentView: View {
 
     private var logInButton: some View {
         Button(action: {
+            randomImageIndex = Int.random(in: 0..<7)
             showIPInputModal = true
         }) {
             VStack {
-                Image(systemName: "person.crop.circle")
+                Image(profileImages[randomImageIndex])
                     .resizable()
                     .scaledToFit()
                     .frame(width: 50, height: 50)
-                    .foregroundColor(Color.primary)
+                    .scaleEffect(1.3)
 
                 Text("Log In")
                     .font(.system(size: 14, weight: .bold, design: .rounded))
