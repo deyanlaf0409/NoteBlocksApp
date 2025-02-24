@@ -23,7 +23,7 @@ struct Late_Night_NotesApp: App {
                         handleDeepLink(url: url)
                     }
                     .onAppear {
-                        let dummyNote = Note(id: UUID(), text: "Test Note", dateCreated: Date(), dateModified: Date(), highlighted: false, folderId: nil, locked: false)
+                        let dummyNote = Note(id: UUID(), text: "Test Note", body: " ", dateCreated: Date(), dateModified: Date(), highlighted: false, folderId: nil, locked: false)
                         let userId = "12345"
 
                         noteStore.addNoteOnServer(note: dummyNote, userId: userId) { result in
@@ -83,6 +83,7 @@ struct Late_Night_NotesApp: App {
                         let fetchedNotes = rawNotes?.compactMap { rawNote -> Note? in
                             guard let idString = rawNote["id"] as? String,
                                   let text = rawNote["text"] as? String,
+                                  let body = rawNote["body"] as? String,
                                   let dateCreatedString = rawNote["dateCreated"] as? String,
                                   let dateModifiedString = rawNote["dateModified"] as? String,
                                   let highlightedString = rawNote["highlighted"] as? String,
@@ -98,6 +99,7 @@ struct Late_Night_NotesApp: App {
 
                             return Note(id: UUID(uuidString: idString) ?? UUID(),
                                         text: text,
+                                        body: body,
                                         dateCreated: dateCreated,
                                         dateModified: dateModified,
                                         highlighted: highlighted,
@@ -298,6 +300,7 @@ struct Late_Night_NotesApp: App {
 
                             if let idString = noteDict["id"] as? String,
                                let text = noteDict["text"] as? String,
+                               let body = noteDict["body"] as? String,
                                let dateCreatedString = noteDict["dateCreated"] as? String,
                                let dateModifiedString = noteDict["dateModified"] as? String,
                                let locked = noteDict["locked"] as? Bool,
@@ -312,6 +315,7 @@ struct Late_Night_NotesApp: App {
                                 // Create a new Note object from the dictionary
                                 let note = Note(id: UUID(uuidString: idString) ?? UUID(),
                                                 text: text,
+                                                body: body,
                                                 dateCreated: dateCreated,
                                                 dateModified: dateModified,
                                                 highlighted: highlighted,

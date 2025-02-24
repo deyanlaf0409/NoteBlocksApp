@@ -46,11 +46,11 @@ struct Note: Identifiable, Codable {
         }
 
     // Custom initializer for decoding notes from deep links
-    init(id: UUID, text: String, dateCreated: Date, dateModified: Date, highlighted: Bool, folderId: UUID?, locked: Bool) {
+    init(id: UUID, text: String, body: String, dateCreated: Date, dateModified: Date, highlighted: Bool, folderId: UUID?, locked: Bool) {
         self.id = id
         self.text = text
         
-        self.body = ""
+        self.body = body
         self.media = []
         
         self.dateCreated = dateCreated

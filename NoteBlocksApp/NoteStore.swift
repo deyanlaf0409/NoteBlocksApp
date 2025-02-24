@@ -369,7 +369,8 @@ class NoteStore: ObservableObject {
         let json: [String: Any] = [
             "note_id": note.id.uuidString,
             "user_id": userId,               // Include userId
-            "text": note.text,               // Note text
+            "text": note.text,
+            "body": note.body,
             "dateCreated": formattedDateCreated, // Include created date
             "dateModified": formattedDateModified,
             "folderId": note.folderID?.uuidString ?? ""
@@ -425,6 +426,7 @@ class NoteStore: ObservableObject {
         let json: [String: Any] = [
             "id": note.id.uuidString,
             "text": note.text,
+            "body": note.body,
             "dateModified": formattedDate,
             "highlight": note.highlighted,
             "folderId": note.folderID?.uuidString ?? "",
