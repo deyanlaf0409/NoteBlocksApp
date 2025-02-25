@@ -265,7 +265,7 @@ struct EditNoteView: View {
         }
         .sheet(isPresented: $showingMediaSheet) {
                     MediaPickerView(editedMedia: $editedMedia)
-                .presentationDetents([.medium, .large])
+                .presentationDetents([.height(450), .large])
                 .presentationDragIndicator(.visible)
                 }
     }

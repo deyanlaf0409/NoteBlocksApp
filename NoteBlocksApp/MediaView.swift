@@ -16,25 +16,24 @@ struct MediaPickerView: View {
     @State private var showImagePicker = false
     @State private var showCamera = false
     @State private var selectedImage: UIImage?
+    @State private var showFullScreenImage = false // New state variable
 
     var body: some View {
         VStack(spacing: 5) {
-            Text("Block Image")
-                .font(.headline)
-                .padding(.top, 0)
-                .padding(.bottom, 0)
-
             // Image Preview Section
-            if let uiImage = selectedImage ?? (editedMedia.first.flatMap { UIImage(data: $0) }) {
-                Image(uiImage: uiImage)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 295, height: 295)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                    .padding(.top, 0)
-                    .padding(.bottom, 0)
+            if let uiImage = selectedImage ?? loadImageFromFile() {
+                Button(action: { showFullScreenImage = true }) { // Tap to show full screen
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 295, height: 295)
+                        .clipShape(RoundedRectangle(cornerRadius: 20))
+                        .padding(.top, 0)
+                        .padding(.bottom, 0)
+                }
+                .buttonStyle(PlainButtonStyle()) // Ensures no button styling interference
             } else {
-                Image("upload") // Ensure placeholder exists in Assets
+                Image("upload")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 295, height: 295)
@@ -72,6 +71,7 @@ struct MediaPickerView: View {
             }
             .padding(.horizontal)
             .padding(.top, 0)
+            .padding(.bottom, 0)
 
             // Second Row: Remove & Close
             HStack {
@@ -100,29 +100,38 @@ struct MediaPickerView: View {
                 .buttonStyle(CustomButtonStyleMedia())
             }
             .padding(.horizontal)
-            .padding(.bottom, 30)
+            .padding(.top, 0)
+            .padding(.bottom, 5)
 
             Spacer()
         }
         .padding()
         .sheet(isPresented: $showImagePicker) {
             ImagePicker(selectedImage: $selectedImage, editedMedia: $editedMedia)
-                .presentationDetents([.medium, .large]) // Allows resizing between medium and large
-                .presentationDragIndicator(.visible) // Shows a drag indicator
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showCamera) {
             CameraPicker(selectedImage: $selectedImage, editedMedia: $editedMedia)
                 .presentationDetents([.large, .large])
                 .presentationDragIndicator(.visible)
         }
+        .fullScreenCover(isPresented: $showFullScreenImage) {
+            FullScreenImageView(image: selectedImage ?? loadImageFromFile()!)
+        }
+    }
 
+    private func loadImageFromFile() -> UIImage? {
+        guard let filePath = editedMedia.first.flatMap({ String(data: $0, encoding: .utf8) }),
+              let url = URL(string: filePath) else { return nil }
+        return UIImage(contentsOfFile: url.path)
     }
 
     private func removeImage() {
         editedMedia.removeAll()
         selectedImage = nil
     }
-    
+
     struct CustomButtonStyleMedia: ButtonStyle {
         func makeBody(configuration: Configuration) -> some View {
             configuration.label
@@ -133,4 +142,36 @@ struct MediaPickerView: View {
                 .animation(.easeOut(duration: 0.2), value: configuration.isPressed)
         }
     }
+    
+    // Full Screen Image View
+    struct FullScreenImageView: View {
+        let image: UIImage
+        @Environment(\.presentationMode) var presentationMode
+
+        var body: some View {
+            ZStack {
+                Color.black.ignoresSafeArea()
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+                    .edgesIgnoringSafeArea(.all)
+
+                VStack {
+                    HStack {
+                        Spacer()
+                        Button(action: { presentationMode.wrappedValue.dismiss() }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.largeTitle)
+                                .foregroundColor(.white)
+                                .padding()
+                        }
+                    }
+                    Spacer()
+                }
+            }
+        }
+    }
+
 }
+
+
