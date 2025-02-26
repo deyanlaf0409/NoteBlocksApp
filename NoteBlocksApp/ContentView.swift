@@ -221,6 +221,8 @@ struct ContentView: View {
                 ProfileView(username: username, onLogout: onLogout, showLogoutConfirmation: $showLogoutConfirmation)
                 .transition(.move(edge: .bottom))
             }
+            .presentationDetents([.height(500), .large])
+            .presentationDragIndicator(.visible)
         }
     }
     

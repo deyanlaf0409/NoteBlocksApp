@@ -31,7 +31,9 @@ struct ProfileView: View {
                 Text("\(username)")
                     .font(.title)
                     .fontWeight(.bold)
-                    .padding()
+                    .padding(.top, 5)
+                    .padding(.bottom, 5)
+
                 
                 if let qrCodeImage = qrCodeImage {
                     ZStack {
@@ -62,7 +64,7 @@ struct ProfileView: View {
                         .foregroundColor(.gray)
                 }
                 
-                Spacer().frame(height: 50)
+                Spacer().frame(height: 30)
 
                 
                 HStack(spacing: 20) {
@@ -88,7 +90,8 @@ struct ProfileView: View {
                             .cornerRadius(15)
                     }
                 }
-                .padding(.top, 16)
+                .padding(.top, 5)
+                .padding(.bottom, 100)
 
 
                 
