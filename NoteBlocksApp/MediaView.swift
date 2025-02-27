@@ -49,8 +49,8 @@ struct MediaPickerView: View {
                     VStack {
                         Image(systemName: "plus")
                             .foregroundColor(.orange)
-                            .font(.system(size: 25))
-                            .padding(.bottom, 1)
+                            .font(.system(size: 22))
+                            .padding(.bottom, 0)
                         Text("Upload Image")
                             .font(.footnote)
                             .foregroundColor(.primary)
@@ -62,8 +62,8 @@ struct MediaPickerView: View {
                     VStack {
                         Image(systemName: "camera")
                             .foregroundColor(.orange)
-                            .font(.system(size: 25))
-                            .padding(.bottom, 1)
+                            .font(.system(size: 22))
+                            .padding(.bottom, 0)
                         Text("Take Image")
                             .font(.footnote)
                             .foregroundColor(.primary)
@@ -73,7 +73,7 @@ struct MediaPickerView: View {
             }
             .padding(.horizontal)
             .padding(.top, 0)
-            .padding(.bottom, 0)
+            .padding(.bottom, 2)
 
             // Second Row: Remove & Close
             HStack {
@@ -81,8 +81,8 @@ struct MediaPickerView: View {
                     VStack {
                         Image(systemName: "trash")
                             .foregroundColor(.gray)
-                            .font(.system(size: 25))
-                            .padding(.bottom, 1)
+                            .font(.system(size: 22))
+                            .padding(.bottom, 0)
                         Text("Remove Image")
                             .font(.footnote)
                             .foregroundColor(.primary)
@@ -94,8 +94,8 @@ struct MediaPickerView: View {
                     VStack {
                         Image(systemName: "xmark.circle.fill")
                             .foregroundColor(.gray)
-                            .font(.system(size: 25))
-                            .padding(.bottom, 1)
+                            .font(.system(size: 22))
+                            .padding(.bottom, 0)
                         Text("Close")
                             .font(.footnote)
                             .foregroundColor(.primary)

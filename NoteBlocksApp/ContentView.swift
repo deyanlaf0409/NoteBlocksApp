@@ -163,7 +163,7 @@ struct ContentView: View {
                 }
 
                 NavigationLink(destination: FolderView().environmentObject(noteStore)) {
-                    navigationButton(icon: "folder", label: "Folders")
+                    navigationButton(icon: "storage" , label: "Folders")
                 }
 
                 if username == "Guest" {
