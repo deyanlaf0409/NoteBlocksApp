@@ -187,6 +187,7 @@ struct ContentView: View {
                 .scaledToFit()
                 .frame(width: 50, height: 50)
                 .foregroundColor(Color.primary)
+                .scaleEffect(icon == "storage" ? 1.1 : 1.0)
 
             Text(label)
                 .font(.system(size: 14, weight: .bold, design: .rounded))
