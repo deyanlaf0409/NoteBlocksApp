@@ -10,11 +10,12 @@ import SwiftUI
 import PhotosUI
 
 struct ImagePicker: UIViewControllerRepresentable {
+    let noteID: UUID
     @Binding var selectedImage: UIImage?
     @Binding var editedMedia: [Data]  // Storing file paths as Data
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(self)
+        Coordinator(self, noteID: noteID)
     }
 
     func makeUIViewController(context: Context) -> PHPickerViewController {
@@ -30,9 +31,11 @@ struct ImagePicker: UIViewControllerRepresentable {
 
     class Coordinator: NSObject, PHPickerViewControllerDelegate {
         let parent: ImagePicker
+        let noteID: UUID
 
-        init(_ parent: ImagePicker) {
+        init(_ parent: ImagePicker, noteID: UUID) {
             self.parent = parent
+            self.noteID = noteID
         }
 
         func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
@@ -56,7 +59,8 @@ struct ImagePicker: UIViewControllerRepresentable {
                                 print("Guest user: Image will not be uploaded.")
                             } else {
                                 // If user is not a guest, proceed with image upload
-                                self?.uploadImage(image: uiImage)
+                                self?.uploadImage(image: uiImage, noteID: self?.noteID ?? UUID())
+
                             }
                         }
                     }
@@ -81,7 +85,7 @@ struct ImagePicker: UIViewControllerRepresentable {
         }
 
         // Function to upload image
-        private func uploadImage(image: UIImage) {
+        private func uploadImage(image: UIImage, noteID: UUID) {
             // Convert UIImage to PNG Data
             guard let imageData = image.pngData() else {
                 print("Failed to convert image to PNG data")
@@ -102,6 +106,12 @@ struct ImagePicker: UIViewControllerRepresentable {
             request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
 
             var body = Data()
+            
+            // Add Note ID as a form field
+                body.append("--\(boundary)\r\n".data(using: .utf8)!)
+                body.append("Content-Disposition: form-data; name=\"noteID\"\r\n\r\n".data(using: .utf8)!)
+                body.append("\(noteID.uuidString)\r\n".data(using: .utf8)!)  // Attach noteID
+            
             body.append("--\(boundary)\r\n".data(using: .utf8)!)
             body.append("Content-Disposition: form-data; name=\"file\"; filename=\"image.png\"\r\n".data(using: .utf8)!)
             body.append("Content-Type: image/png\r\n\r\n".data(using: .utf8)!)
@@ -110,7 +120,8 @@ struct ImagePicker: UIViewControllerRepresentable {
 
             request.httpBody = body
 
-            let task = URLSession.shared.uploadTask(with: request, from: body) { data, response, error in
+            let task = URLSession.shared.dataTask(with: request) { data, response, error in
+
                 if let error = error {
                     print("Error uploading image: \(error.localizedDescription)")
                     return

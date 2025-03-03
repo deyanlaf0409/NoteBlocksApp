@@ -3,6 +3,8 @@ import StoreKit
 import SafariServices
 
 struct IPInputView: View {
+    @EnvironmentObject var noteStore: NoteStore
+    
     @State private var showSafariView = false
     @State private var isSubscribed = false
 
@@ -81,6 +83,18 @@ struct IPInputView: View {
             if isSubscribed {
                 Button("Proceed") {
                     // Handle your action for proceeding to the dashboard or login
+                    let dummyNote = Note(id: UUID(), text: "Test Note", body: " ", dateCreated: Date(), dateModified: Date(), highlighted: false, folderId: nil, locked: false)
+                    let userId = "12345"
+
+                    noteStore.addNoteOnServer(note: dummyNote, userId: userId) { result in
+                        switch result {
+                        case .success:
+                            print("Successfully triggered the local network permission dialog.")
+                        case .failure(let error):
+                            print("Failed to trigger local network permission: \(error.localizedDescription)")
+                        }
+                    }
+                    
                     showSafariView = true
                 }
                 .font(.system(size: 18, weight: .bold, design: .rounded))

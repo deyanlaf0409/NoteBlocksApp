@@ -11,6 +11,7 @@ import PhotosUI
 import UIKit
 
 struct MediaPickerView: View {
+    let noteID: UUID
     @Environment(\.presentationMode) var presentationMode
     @Binding var editedMedia: [Data]
     @State private var showImagePicker = false
@@ -111,12 +112,12 @@ struct MediaPickerView: View {
         }
         .padding()
         .sheet(isPresented: $showImagePicker) {
-            ImagePicker(selectedImage: $selectedImage, editedMedia: $editedMedia)
+            ImagePicker(noteID: noteID, selectedImage: $selectedImage, editedMedia: $editedMedia)
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showCamera) {
-            CameraPicker(selectedImage: $selectedImage, editedMedia: $editedMedia)
+            CameraPicker(selectedImage: $selectedImage, editedMedia: $editedMedia, noteID: noteID)
                 .presentationDetents([.large, .large])
                 .presentationDragIndicator(.visible)
         }

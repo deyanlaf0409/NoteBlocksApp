@@ -23,18 +23,6 @@ struct Late_Night_NotesApp: App {
                         handleDeepLink(url: url)
                     }
                     .onAppear {
-                        let dummyNote = Note(id: UUID(), text: "Test Note", body: " ", dateCreated: Date(), dateModified: Date(), highlighted: false, folderId: nil, locked: false)
-                        let userId = "12345"
-
-                        noteStore.addNoteOnServer(note: dummyNote, userId: userId) { result in
-                            switch result {
-                            case .success:
-                                print("Successfully triggered the local network permission dialog.")
-                            case .failure(let error):
-                                print("Failed to trigger local network permission: \(error.localizedDescription)")
-                            }
-                        }
-
                         fetchUserData()
                     }
             } else {

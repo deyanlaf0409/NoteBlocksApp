@@ -264,7 +264,7 @@ struct EditNoteView: View {
             ReminderPicker(reminderDate: $reminderDate)
         }
         .sheet(isPresented: $showingMediaSheet) {
-                    MediaPickerView(editedMedia: $editedMedia)
+                    MediaPickerView(noteID: note.id, editedMedia: $editedMedia)
                 .presentationDetents([.height(450), .large])
                 .presentationDragIndicator(.visible)
                 }

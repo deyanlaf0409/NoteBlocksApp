@@ -12,6 +12,7 @@ struct SafariView: UIViewControllerRepresentable {
 }
 
 struct IntroView: View {
+    
     @Binding var loggedInUser: String?
     @Binding var showNotes: Bool
     @Binding var showSafari: Bool
@@ -36,7 +37,7 @@ struct IntroView: View {
 
                 // App Header
                 Text("Welcome to NoteBlocks")
-                    .font(.custom("AmericanTypewriter-Bold", size: 35)) // Replace with your preferred font
+                    .font(.custom("AmericanTypewriter-Bold", size: 25)) // Replace with your preferred font
                     .padding(.top, 1)
                     .padding(.bottom, 1)
 
@@ -115,5 +116,8 @@ struct IntroView: View {
         .frame(maxWidth: .infinity, alignment: .center)
         .padding(.bottom, 10)
     }
+    
+    
+    
 }
 
