@@ -172,7 +172,7 @@ struct ContentView: View {
                     profileButton
                     
                     NavigationLink(destination: SocialView()) {  // Friends Navigation Button
-                                        navigationButton(icon: "globe", label: "Explore")
+                                        navigationButton(icon: "share", label: "Explore")
                                     }
                 }
             }
