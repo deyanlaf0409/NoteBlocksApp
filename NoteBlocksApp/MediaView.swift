@@ -133,9 +133,66 @@ struct MediaPickerView: View {
     }
 
     private func removeImage() {
-        editedMedia.removeAll()
-        selectedImage = nil
+        // First, check if the editedMedia array contains any data (which means an image is associated with this note)
+        guard let filePath = editedMedia.first?.base64EncodedString(), !filePath.isEmpty else {
+            // If no media is available, show a message
+            print("No image associated with this note to remove.")
+            return
+        }
+
+        // Now that we know there's an image, send the request to the server to remove the image
+        let noteID = self.noteID // Note's UUID
+        let urlString = "http://192.168.0.222/project/API/removeImage.php"
+        
+        // Send a POST request to the server
+        var request = URLRequest(url: URL(string: urlString)!)
+        request.httpMethod = "DELETE"
+        let bodyParams = [
+            "noteID": noteID.uuidString
+        ]
+        
+        // Set up the HTTP body with the noteID
+        request.httpBody = try? JSONSerialization.data(withJSONObject: bodyParams, options: [])
+
+        // Send the request
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Error: \(error.localizedDescription)")
+                return
+            }
+
+            guard let data = data else {
+                print("No data received.")
+                return
+            }
+
+            do {
+                // Parse the response from the server
+                let jsonResponse = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+
+                if let message = jsonResponse?["message"] as? String {
+                    // Handle server response
+                    print(message)
+
+                    // If the response indicates success, remove the image from the app
+                    if message.contains("deleted successfully") {
+                        DispatchQueue.main.async {
+                            // Remove the image from editedMedia array
+                            self.editedMedia.removeAll()
+                            self.selectedImage = nil
+                            // Optionally, show a success message in the UI
+                            print("Image removed from app as well.")
+                        }
+                    }
+                }
+
+            } catch {
+                print("Failed to parse response: \(error.localizedDescription)")
+            }
+        }.resume()
     }
+
+
 
     struct CustomButtonStyleMedia: ButtonStyle {
         func makeBody(configuration: Configuration) -> some View {
