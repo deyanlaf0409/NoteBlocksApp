@@ -18,7 +18,7 @@ struct Note: Identifiable, Codable {
     var text: String
     
     var body: String
-    var media: [Data]
+    var media: [String]
     
     var dateCreated: Date
     var dateModified: Date
@@ -32,7 +32,7 @@ struct Note: Identifiable, Codable {
     var locked: Bool = false
 
     // Default initializer for creating new notes
-    init(text: String, body: String = "", media: [Data] = []) {
+    init(text: String, body: String = "", media: [String] = []) {
             self.id = UUID()
             self.text = text
             self.body = body
@@ -46,12 +46,12 @@ struct Note: Identifiable, Codable {
         }
 
     // Custom initializer for decoding notes from deep links
-    init(id: UUID, text: String, body: String, dateCreated: Date, dateModified: Date, highlighted: Bool, folderId: UUID?, locked: Bool) {
+    init(id: UUID, text: String, body: String, media: [String], dateCreated: Date, dateModified: Date, highlighted: Bool, folderId: UUID?, locked: Bool) {
         self.id = id
         self.text = text
         
         self.body = body
-        self.media = []
+        self.media = media
         
         self.dateCreated = dateCreated
         self.dateModified = dateModified

@@ -12,7 +12,7 @@ import PhotosUI
 struct ImagePicker: UIViewControllerRepresentable {
     let noteID: UUID
     @Binding var selectedImage: UIImage?
-    @Binding var editedMedia: [Data]  // Storing file paths as Data
+    @Binding var editedMedia: [String]  // Storing file paths as Strings (not Data)
 
     func makeCoordinator() -> Coordinator {
         Coordinator(self, noteID: noteID)
@@ -48,10 +48,10 @@ struct ImagePicker: UIViewControllerRepresentable {
                     if let uiImage = image as? UIImage {
                         self?.parent.selectedImage = uiImage
                         
-                        // Save the image to the file system and get its file path
+                        // Save the image to the file system with the noteID as the file name
                         if let filePath = self?.saveImageToDocuments(image: uiImage) {
-                            // Save file path as Data (UTF-8 encoded)
-                            self?.parent.editedMedia = [filePath.data(using: .utf8)!]
+                            // Save file path as String
+                            self?.parent.editedMedia = [filePath]
 
                             // Check if user is a guest using UserDefaults before uploading
                             let userId = UserDefaults.standard.string(forKey: "userId") ?? ""
@@ -60,7 +60,6 @@ struct ImagePicker: UIViewControllerRepresentable {
                             } else {
                                 // If user is not a guest, proceed with image upload
                                 self?.uploadImage(image: uiImage, noteID: self?.noteID ?? UUID())
-
                             }
                         }
                     }
@@ -68,16 +67,16 @@ struct ImagePicker: UIViewControllerRepresentable {
             }
         }
 
-        // Function to save image to Documents directory
+        // Function to save image to Documents directory and return file path as string
         private func saveImageToDocuments(image: UIImage) -> String? {
-            // Choose PNG or JPEG based on your preference
+            // Use the noteID as the image file name
             guard let imageData = image.pngData() else { return nil }  // Save as PNG
-            let fileName = UUID().uuidString + ".png"  // Generate unique file name with .png extension
+            let fileName = noteID.uuidString + ".png"  // Use noteID as the file name with .png extension
             let fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent(fileName)
             
             do {
                 try imageData.write(to: fileURL)
-                return fileURL.path  // Return file path
+                return fileURL.path  // Return the file path as string
             } catch {
                 print("Error saving image: \(error)")
                 return nil
@@ -108,12 +107,12 @@ struct ImagePicker: UIViewControllerRepresentable {
             var body = Data()
             
             // Add Note ID as a form field
-                body.append("--\(boundary)\r\n".data(using: .utf8)!)
-                body.append("Content-Disposition: form-data; name=\"noteID\"\r\n\r\n".data(using: .utf8)!)
-                body.append("\(noteID.uuidString)\r\n".data(using: .utf8)!)  // Attach noteID
+            body.append("--\(boundary)\r\n".data(using: .utf8)!)
+            body.append("Content-Disposition: form-data; name=\"noteID\"\r\n\r\n".data(using: .utf8)!)
+            body.append("\(noteID.uuidString)\r\n".data(using: .utf8)!)  // Attach noteID
             
             body.append("--\(boundary)\r\n".data(using: .utf8)!)
-            body.append("Content-Disposition: form-data; name=\"file\"; filename=\"image.png\"\r\n".data(using: .utf8)!)
+            body.append("Content-Disposition: form-data; name=\"file\"; filename=\"\(noteID.uuidString).png\"\r\n".data(using: .utf8)!)  // Use noteID for filename
             body.append("Content-Type: image/png\r\n\r\n".data(using: .utf8)!)
             body.append(imageData)
             body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
@@ -156,10 +155,10 @@ struct ImagePicker: UIViewControllerRepresentable {
 
             task.resume()
         }
-
-
     }
 }
+
+
 
 
 

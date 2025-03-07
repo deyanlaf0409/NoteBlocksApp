@@ -11,7 +11,7 @@ import UIKit
 
 struct CameraPicker: UIViewControllerRepresentable {
     @Binding var selectedImage: UIImage?
-    @Binding var editedMedia: [Data]
+    @Binding var editedMedia: [String]  // Store file paths as Strings instead of Data
     var noteID: UUID  // Add noteID parameter
 
     func makeCoordinator() -> Coordinator {
@@ -44,10 +44,17 @@ struct CameraPicker: UIViewControllerRepresentable {
 
                 // Save image to file system and get file path
                 if let filePath = self.saveImageToDocuments(image: uiImage) {
-                    parent.editedMedia = [filePath.data(using: .utf8)!]  // Save file path as Data
+                    parent.editedMedia = [filePath]  // Save file path as String
 
-                    // Upload image with noteID
-                    self.uploadImage(image: uiImage, noteID: parent.noteID)
+                    // Check if user is a guest using UserDefaults before uploading
+                    let userId = UserDefaults.standard.string(forKey: "userId") ?? ""
+                    if userId.isEmpty {
+                        print("Guest user: Image will be saved locally.")
+                        // Only save the image locally for guest users
+                    } else {
+                        // If user is not a guest, proceed with image upload
+                        self.uploadImage(image: uiImage, noteID: parent.noteID)
+                    }
                 }
             }
         }
@@ -56,7 +63,7 @@ struct CameraPicker: UIViewControllerRepresentable {
             picker.dismiss(animated: true)
         }
 
-        // Function to save image to Documents directory
+        // Function to save image to Documents directory and return file path as string
         private func saveImageToDocuments(image: UIImage) -> String? {
             guard let imageData = image.pngData() else { return nil }
             let fileName = parent.noteID.uuidString + ".png"  // Use noteID as file name
@@ -64,7 +71,7 @@ struct CameraPicker: UIViewControllerRepresentable {
             
             do {
                 try imageData.write(to: fileURL)
-                return fileURL.path  // Return file path
+                return fileURL.path  // Return file path as string
             } catch {
                 print("Error saving image: \(error)")
                 return nil
@@ -95,9 +102,9 @@ struct CameraPicker: UIViewControllerRepresentable {
             var body = Data()
             
             // Add Note ID as a form field
-                body.append("--\(boundary)\r\n".data(using: .utf8)!)
-                body.append("Content-Disposition: form-data; name=\"noteID\"\r\n\r\n".data(using: .utf8)!)
-                body.append("\(noteID.uuidString)\r\n".data(using: .utf8)!)  // Attach noteID
+            body.append("--\(boundary)\r\n".data(using: .utf8)!)
+            body.append("Content-Disposition: form-data; name=\"noteID\"\r\n\r\n".data(using: .utf8)!)
+            body.append("\(noteID.uuidString)\r\n".data(using: .utf8)!)  // Attach noteID
             
             body.append("--\(boundary)\r\n".data(using: .utf8)!)
             body.append("Content-Disposition: form-data; name=\"file\"; filename=\"image.png\"\r\n".data(using: .utf8)!)
@@ -145,5 +152,7 @@ struct CameraPicker: UIViewControllerRepresentable {
         }
     }
 }
+
+
 
 

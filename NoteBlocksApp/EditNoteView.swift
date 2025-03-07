@@ -14,7 +14,7 @@ struct EditNoteView: View {
     @State private var selectedFolderId: UUID?
     
     @State private var editedBody: String = ""
-    @State private var editedMedia: [Data] = []
+    @State private var editedMedia: [String] = []
     @State private var showingMediaSheet: Bool = false
     @State private var showLoginModal = false
     
@@ -120,7 +120,7 @@ struct EditNoteView: View {
                                 .frame(width: 24, height: 24) // Base size
                                 .scaleEffect(1.4) // Increase size without affecting layout
                             
-                            Text("Media")
+                            Text("Image")
                                 .font(.footnote)
                                 .foregroundColor(.primary)
                         }
@@ -264,7 +264,7 @@ struct EditNoteView: View {
             ReminderPicker(reminderDate: $reminderDate)
         }
         .sheet(isPresented: $showingMediaSheet) {
-                    MediaPickerView(noteID: note.id, editedMedia: $editedMedia)
+            MediaPickerView(noteID: note.id, editedMedia: $editedMedia)
                 .presentationDetents([.height(450), .large])
                 .presentationDragIndicator(.visible)
                 }

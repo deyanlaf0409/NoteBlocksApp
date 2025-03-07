@@ -1,3 +1,4 @@
+
 import SwiftUI
 import Network
 import UserNotifications
@@ -68,7 +69,18 @@ struct Late_Night_NotesApp: App {
                         let rawNotes = try JSONSerialization.jsonObject(with: decodedNotesData) as? [[String: Any]]
                         let rawFolders = try JSONSerialization.jsonObject(with: decodedFoldersData) as? [[String: Any]]
 
-                        let fetchedNotes = rawNotes?.compactMap { rawNote -> Note? in
+                        var fetchedNotes: [Note] = []
+                        let fetchedFolders = rawFolders?.compactMap { rawFolder -> Folder? in
+                            guard let idString = rawFolder["id"] as? String,
+                                  let name = rawFolder["name"] as? String else {
+                                return nil
+                            }
+                            return Folder(id: UUID(uuidString: idString) ?? UUID(), name: name)
+                        } ?? []
+
+                        let downloadGroup = DispatchGroup()
+
+                        rawNotes?.forEach { rawNote in
                             guard let idString = rawNote["id"] as? String,
                                   let text = rawNote["text"] as? String,
                                   let body = rawNote["body"] as? String,
@@ -76,7 +88,7 @@ struct Late_Night_NotesApp: App {
                                   let dateModifiedString = rawNote["dateModified"] as? String,
                                   let highlightedString = rawNote["highlighted"] as? String,
                                   let lockedString = rawNote["locked"] as? String else {
-                                        return nil
+                                return
                             }
 
                             let dateCreated = dateFormatter.date(from: dateCreatedString) ?? Date()
@@ -84,102 +96,173 @@ struct Late_Night_NotesApp: App {
                             let highlighted = (highlightedString == "t")
                             let locked = (lockedString == "t")
                             let folderId: UUID? = (rawNote["folderId"] as? String).flatMap(UUID.init)
+                            
+                            // Initialize an empty media array for the note (ensure only one image is associated)
+                            let mediaData: [String] = []
 
-                            return Note(id: UUID(uuidString: idString) ?? UUID(),
-                                        text: text,
-                                        body: body,
-                                        dateCreated: dateCreated,
-                                        dateModified: dateModified,
-                                        highlighted: highlighted,
-                                        folderId: folderId,
-                                        locked: locked)
+                            // Create the note
+                            var note = Note(id: UUID(uuidString: idString) ?? UUID(),
+                                            text: text,
+                                            body: body,
+                                            media: mediaData,  // Start with an empty media array
+                                            dateCreated: dateCreated,
+                                            dateModified: dateModified,
+                                            highlighted: highlighted,
+                                            folderId: folderId,
+                                            locked: locked)
 
-                        } ?? []
+                            print("Raw note data: \(rawNote)")
 
-                        let fetchedFolders = rawFolders?.compactMap { rawFolder -> Folder? in
-                            guard let idString = rawFolder["id"] as? String,
-                                  let name = rawFolder["name"] as? String else {
-                                return nil
+                            // Check if there is an image URL, then download it
+                            if let imageUrlString = rawNote["media"] as? String, !imageUrlString.isEmpty, let imageUrl = URL(string: imageUrlString.trimmingCharacters(in: .whitespacesAndNewlines)) {
+                                // Proceed with image download
+                                print("Found valid media URL: \(imageUrl)")
+                                downloadGroup.enter()
+
+                                // Download the image and replace the existing one if necessary
+                                downloadImage(from: imageUrl, forNote: note) { updatedNote in
+                                    // Ensure that updatedNote is properly modified and contains a new file path
+                                    if let filePath = updatedNote.media.last {
+                                        // Since a note can only have one image, we replace the existing media path with the new one
+                                        note.media = [filePath]  // Replace the entire media array with the new image path
+                                    }
+
+                                    // Append the updated note to the fetchedNotes array
+                                    fetchedNotes.append(note)
+                                    
+                                    // Mark the download task as complete
+                                    downloadGroup.leave()
+                                }
+
+
+                            } else {
+                                print("No valid image URL found in note or URL is malformed")
+                                fetchedNotes.append(note)  // Add the note without image data if no valid URL
+                            }
+                        }
+
+                        downloadGroup.notify(queue: .main) {
+                            let guestNotes = noteStore.notes
+                            let guestFolders = noteStore.folders
+
+                            var mergedNotes = guestNotes + fetchedNotes
+                            var mergedFolders = guestFolders + fetchedFolders
+
+                            let uniqueNotes = Dictionary(mergedNotes.map { ($0.id, $0) }, uniquingKeysWith: { $1 }).values
+                            let uniqueFolders = Dictionary(mergedFolders.map { ($0.id, $0) }, uniquingKeysWith: { $1 }).values
+
+                            mergedNotes = Array(uniqueNotes)
+                            mergedFolders = Array(uniqueFolders)
+
+                            noteStore.notes = mergedNotes
+                            noteStore.folders = mergedFolders
+
+                            // Debug print to check media
+                            for note in mergedNotes {
+                                print("Note \(note.id): \(note.media.isEmpty ? "No media" : "Has media")")
                             }
 
-                            return Folder(id: UUID(uuidString: idString) ?? UUID(), name: name)
-                        } ?? []
+                            mergedFolders.forEach { folder in
+                                noteStore.addFolderToServer(folder: folder, userId: userIdString)
+                            }
 
-                        let guestNotes = noteStore.notes
-                        let guestFolders = noteStore.folders
-                        
-                        var mergedNotes = guestNotes + fetchedNotes
-                        var mergedFolders = guestFolders + fetchedFolders
-                        
-                        let uniqueNotes = Dictionary(mergedNotes.map { ($0.id, $0) }, uniquingKeysWith: { $1 }).values
-                        let uniqueFolders = Dictionary(mergedFolders.map { ($0.id, $0) }, uniquingKeysWith: { $1 }).values
-                        
-                        mergedNotes = Array(uniqueNotes)
-                        mergedFolders = Array(uniqueFolders)
-                        
-                        noteStore.notes = mergedNotes
-                        noteStore.folders = mergedFolders
-                        
-                        print("Merged notes: \(mergedNotes.map { $0.text })")
-                        print("Merged folders: \(mergedFolders.map { $0.name })")
-                        
-                        mergedFolders.forEach { folder in
-                                                noteStore.addFolderToServer(folder: folder, userId: userIdString)
-                                            }
-                        
-                        
-
-                        mergedNotes.forEach { note in
-                            noteStore.addNoteOnServer(note: note, userId: userIdString) { result in
-                                switch result {
-                                case .success:
-                                    print("Saved note to server: \(note.text)")
-                                case .failure(let error):
-                                    print("Failed to save note to server: \(error.localizedDescription)")
+                            mergedNotes.forEach { note in
+                                noteStore.addNoteOnServer(note: note, userId: userIdString) { result in
+                                    switch result {
+                                    case .success:
+                                        print("Saved note to server: \(note.text)")
+                                    case .failure(let error):
+                                        print("Failed to save note to server: \(error.localizedDescription)")
+                                    }
                                 }
                             }
-                        }
-                        
-                        mergedNotes.forEach { note in
-                            noteStore.updateNoteOnServer(note: note) { result in
-                                switch result {
-                                case .success:
-                                    print("Saved note to server: \(note.text)")
-                                case .failure(let error):
-                                    print("Failed to save note to server: \(error.localizedDescription)")
-                                }
+
+                            loggedInUser = username
+                            showNotes = true
+                            UserDefaults.standard.set(true, forKey: "isLoggedIn")
+                            UserDefaults.standard.set(username, forKey: "loggedInUser")
+                            UserDefaults.standard.set(userId, forKey: "userId")
+
+                            if let encodedNotes = try? JSONEncoder().encode(mergedNotes) {
+                                UserDefaults.standard.set(encodedNotes, forKey: "savedNotes")
                             }
-                        }
-                        
 
+                            if let encodedFolders = try? JSONEncoder().encode(mergedFolders) {
+                                UserDefaults.standard.set(encodedFolders, forKey: "savedFolders")
+                            }
 
-                        loggedInUser = username
-                        showNotes = true
-                        UserDefaults.standard.set(true, forKey: "isLoggedIn")
-                        UserDefaults.standard.set(username, forKey: "loggedInUser")
-                        UserDefaults.standard.set(userId, forKey: "userId")
-
-                        if let encodedNotes = try? JSONEncoder().encode(mergedNotes) {
-                            UserDefaults.standard.set(encodedNotes, forKey: "savedNotes")
+                            showSafari = false
+                            print("Login successful with username: \(username), userId: \(userId), \(mergedNotes.count) notes, and \(mergedFolders.count) folders")
                         }
 
-                        if let encodedFolders = try? JSONEncoder().encode(mergedFolders) {
-                            UserDefaults.standard.set(encodedFolders, forKey: "savedFolders")
-                        }
-
-                        showSafari = false
-                        print("Login successful with username: \(username), userId: \(userId), \(mergedNotes.count) notes, and \(mergedFolders.count) folders")
                     } catch {
                         print("Failed to decode notes or folders data: \(error)")
                     }
                 } else {
                     print("Failed to Base64 decode the notes or folders data")
                 }
-            } else {
-                print("Login failed or invalid deep link")
             }
         }
     }
+
+
+
+
+
+
+    private func downloadImage(from url: URL, forNote note: Note, completion: @escaping (Note) -> Void) {
+        let task = URLSession.shared.dataTask(with: url) { data, response, error in
+            if let data = data, let image = UIImage(data: data) {
+                // Save image to the Documents directory (you can save and get the file path here)
+                if let filePath = self.saveImageToDocuments(image: image, note: note) {
+                    print("Image saved to disk at: \(filePath)")
+
+                    // Update the note's media with the new file path
+                    var updatedNote = note
+                    updatedNote.media = [filePath]  // Replace existing media with the new image path
+
+                    // Return the updated note via the completion handler
+                    completion(updatedNote)
+                } else {
+                    print("Failed to save image.")
+                    completion(note)  // Return the note unmodified in case of failure
+                }
+            } else {
+                print("Failed to download image.")
+                completion(note)  // Return the note unmodified in case of failure
+            }
+        }
+        task.resume()
+    }
+
+
+
+
+    
+    private func saveImageToDocuments(image: UIImage, note: Note) -> String? {
+        // Use the note's UUID as the image file name
+        let fileName = "\(note.id.uuidString).png"  // Name the file after the note's UUID, ensuring it's unique to the note.
+        guard let imageData = image.pngData() else { return nil }  // Save as PNG
+        let fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent(fileName)
+        
+        do {
+            try imageData.write(to: fileURL)
+            return fileURL.path  // Return file path
+        } catch {
+            print("Error saving image: \(error)")
+            return nil
+        }
+    }
+
+
+
+
+
+
+
+
+
+
 
 
     private func resetToInitialState() {
@@ -208,82 +291,16 @@ struct Late_Night_NotesApp: App {
             DispatchQueue.main.async {
                 switch result {
                 case .success(let json):
-                    // Log the raw response
-                    if let rawResponse = String(data: try! JSONSerialization.data(withJSONObject: json), encoding: .utf8) {
-                        print("Raw response: \(rawResponse)")
-                    }
-
-                    // Check if the response has a 'status' field and that it is 'success'
-                    guard let status = json["status"] as? String, status == "success" else {
-                        print("Error: Invalid status in response or no notes found.")
-                        
-                        // If the user doesn't exist or the status is not success, reset the app state
-                        resetToInitialState()
-                        return
-                    }
-
-                    // Extract the user information
-                    if let userDict = json["user"] as? [String: Any],
-                       let username = userDict["username"] as? String {
-                        loggedInUser = username
-                        print("Username: \(username)")
-                    } else {
-                        // If no username is found, reset the app state
-                        print("User not found in response. Resetting app state.")
-                        resetToInitialState()
-                        return
-                    }
-
-                    // Extract the folders array
-                    if let foldersArray = json["folders"] as? [[String: Any]] {
-                        var fetchedFolders: [Folder] = []
-
-                        // Debugging: Check the structure of each folder
-                        print("Folders array: \(foldersArray)")
-
-                        for folderDict in foldersArray {
-                            print("Parsing folder: \(folderDict)")
-
-                            if let idString = folderDict["id"] as? String,
-                               let name = folderDict["name"] as? String {
-                                
-                                // Create a new Folder object
-                                let folder = Folder(id: UUID(uuidString: idString) ?? UUID(),
-                                                    name: name)
-                                
-                                // Add the folder to the array
-                                fetchedFolders.append(folder)
-                            } else {
-                                print("Error: Missing fields in folder: \(folderDict)")
-                            }
-                        }
-
-                        // Update the FolderStore with the fetched folders
-                        noteStore.folders = fetchedFolders
-                        print("Fetched \(fetchedFolders.count) folders from server.")
-
-                        // Optionally, save the folders to UserDefaults
-                        if let encodedFolders = try? JSONEncoder().encode(fetchedFolders) {
-                            UserDefaults.standard.set(encodedFolders, forKey: "savedFolders")
-                            print("Saved folders to UserDefaults")
-                        }
-
-                    } else {
-                        print("Error: No folders found in the response.")
-                    }
-
-                    // Extract the notes array (as you did before)
                     if let notesArray = json["notes"] as? [[String: Any]] {
                         var fetchedNotes: [Note] = []
+                        let dispatchGroup = DispatchGroup()
 
-                        // Debugging: Check the structure of each note
                         print("Notes array: \(notesArray)")
 
                         let dateFormatter = DateFormatter()
                         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSSSS"
 
                         for noteDict in notesArray {
-                            // Debugging: Check individual note
                             print("Parsing note: \(noteDict)")
 
                             if let idString = noteDict["id"] as? String,
@@ -294,52 +311,74 @@ struct Late_Night_NotesApp: App {
                                let locked = noteDict["locked"] as? Bool,
                                let highlighted = noteDict["highlighted"] as? Bool {
 
-                                // Handle folderId as optional
-                                let folderIdString = noteDict["folderId"] as? String // FolderId can be null
+                                let folderIdString = noteDict["folderId"] as? String
+                                let imageUrlString = noteDict["media"] as? String // Check for image URL
 
                                 let dateCreated = dateFormatter.date(from: dateCreatedString) ?? Date()
                                 let dateModified = dateFormatter.date(from: dateModifiedString) ?? Date()
 
-                                // Create a new Note object from the dictionary
-                                let note = Note(id: UUID(uuidString: idString) ?? UUID(),
+                                // Initialize media array (it will hold the file paths for images)
+                                let mediaData: [String] = []
+
+                                // Create the note object
+                                var note = Note(id: UUID(uuidString: idString) ?? UUID(),
                                                 text: text,
                                                 body: body,
+                                                media: mediaData,
                                                 dateCreated: dateCreated,
                                                 dateModified: dateModified,
                                                 highlighted: highlighted,
                                                 folderId: folderIdString != nil ? UUID(uuidString: folderIdString!) ?? UUID() : nil,
                                                 locked: locked)
-                                
 
-                                // Add the note to the array
-                                fetchedNotes.append(note)
+                                // Check for the image URL and download if present
+                                if let imageUrlString = imageUrlString, let imageUrl = URL(string: imageUrlString) {
+                                    dispatchGroup.enter() // Start tracking image download
+
+                                    // Download the image and update the media array
+                                    downloadImage(from: imageUrl, forNote: note) { updatedNote in
+                                        if let filePath = updatedNote.media.first {
+                                            // Clear previous media (if any) and append the new file path
+                                            note.media = [filePath] // Ensures only one image is stored
+                                        }
+
+                                        // Append the updated note to the list
+                                        fetchedNotes.append(note) // Add the note (with media) to the fetchedNotes array
+
+                                        dispatchGroup.leave() // Mark this download as finished
+                                    }
+                                } else {
+                                    // If no image URL, just append the note without media
+                                    fetchedNotes.append(note)
+                                }
                             } else {
                                 print("Error: Missing fields in note: \(noteDict)")
                             }
                         }
 
-                        // Update the NoteStore with the fetched notes
-                        noteStore.notes = fetchedNotes
-                        print("Fetched \(fetchedNotes.count) notes from server.")
+                        // Wait for all image downloads to complete
+                        dispatchGroup.notify(queue: .main) {
+                            noteStore.notes = fetchedNotes
+                            print("Fetched \(fetchedNotes.count) notes from server.")
 
-                        // Optionally, save the notes to UserDefaults
-                        if let encodedNotes = try? JSONEncoder().encode(fetchedNotes) {
-                            UserDefaults.standard.set(encodedNotes, forKey: "savedNotes")
-                            print("Saved notes to UserDefaults")
+                            if let encodedNotes = try? JSONEncoder().encode(fetchedNotes) {
+                                UserDefaults.standard.set(encodedNotes, forKey: "savedNotes")
+                                print("Saved notes to UserDefaults")
+                            }
                         }
-
                     } else {
                         print("Error: No notes found in the response.")
                     }
 
                 case .failure(let error):
                     print("Failed to fetch notes from server: \(error.localizedDescription)")
-                    
-                    // If the network fetch fails, reset the app state
                     resetToInitialState()
                 }
             }
         }
     }
+
+
+
 }
 

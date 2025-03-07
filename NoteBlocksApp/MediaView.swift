@@ -13,37 +13,42 @@ import UIKit
 struct MediaPickerView: View {
     let noteID: UUID
     @Environment(\.presentationMode) var presentationMode
-    @Binding var editedMedia: [Data]
+    @Binding var editedMedia: [String] // Assuming this stores file paths now
     @State private var showImagePicker = false
     @State private var showCamera = false
     @State private var selectedImage: UIImage?
-    @State private var showFullScreenImage = false // New state variable
 
     var body: some View {
         VStack(spacing: 5) {
             // Image Preview Section
-            if let uiImage = selectedImage ?? loadImageFromFile() {
-                Button(action: { showFullScreenImage = true }) { // Tap to show full screen
-                    Image(uiImage: uiImage)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 295, height: 295)
-                        .clipShape(RoundedRectangle(cornerRadius: 20))
-                        .padding(.top, 0)
-                        .padding(.bottom, 0)
-                }
-                .buttonStyle(PlainButtonStyle()) // Ensures no button styling interference
-            } else {
-                Image("upload")
+            if editedMedia.isEmpty {
+                Image("upload") // Placeholder when no image exists
                     .resizable()
                     .scaledToFit()
                     .frame(width: 295, height: 295)
                     .clipShape(RoundedRectangle(cornerRadius: 10))
-                    .padding(.top, 0)
-                    .padding(.bottom, 0)
                     .opacity(0.9)
+            } else {
+                // Display images from editedMedia (file paths)
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 10) {
+                        ForEach(0..<editedMedia.count, id: \.self) { index in
+                            // Load image from file path
+                            if let uiImage = UIImage(contentsOfFile: editedMedia[index]) {
+                                Image(uiImage: uiImage)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 295, height: 295)
+                                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                                    .padding(.top, 0)
+                                    .padding(.bottom, 0)
+                            }
+                        }
+                    }
+                    .padding()
+                }
             }
-
+            
             // First Row: Upload & Take Image
             HStack {
                 Button(action: { showImagePicker = true }) {
@@ -121,39 +126,32 @@ struct MediaPickerView: View {
                 .presentationDetents([.large, .large])
                 .presentationDragIndicator(.visible)
         }
-        .fullScreenCover(isPresented: $showFullScreenImage) {
-            FullScreenImageView(image: selectedImage ?? loadImageFromFile()!)
-        }
-    }
-
-    private func loadImageFromFile() -> UIImage? {
-        guard let filePath = editedMedia.first.flatMap({ String(data: $0, encoding: .utf8) }),
-              let url = URL(string: filePath) else { return nil }
-        return UIImage(contentsOfFile: url.path)
     }
 
     private func removeImage() {
         // First, check if the editedMedia array contains any data (which means an image is associated with this note)
-        guard let filePath = editedMedia.first?.base64EncodedString(), !filePath.isEmpty else {
+        guard let filePath = editedMedia.first, !filePath.isEmpty else {
             // If no media is available, show a message
             print("No image associated with this note to remove.")
             return
         }
-
+        
         // Now that we know there's an image, send the request to the server to remove the image
         let noteID = self.noteID // Note's UUID
         let urlString = "http://192.168.0.222/project/API/removeImage.php"
         
-        // Send a POST request to the server
+        // Send a POST request to the server (DELETE method might not be the best for this case)
         var request = URLRequest(url: URL(string: urlString)!)
-        request.httpMethod = "DELETE"
+        request.httpMethod = "DELETE"  // Changed to POST for compatibility with the server
+        
+        // Prepare the body parameters for the server request
         let bodyParams = [
             "noteID": noteID.uuidString
         ]
         
         // Set up the HTTP body with the noteID
         request.httpBody = try? JSONSerialization.data(withJSONObject: bodyParams, options: [])
-
+        
         // Send the request
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
@@ -168,16 +166,15 @@ struct MediaPickerView: View {
 
             do {
                 // Parse the response from the server
-                let jsonResponse = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
-
-                if let message = jsonResponse?["message"] as? String {
+                if let jsonResponse = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+                   let message = jsonResponse["message"] as? String {
                     // Handle server response
                     print(message)
 
                     // If the response indicates success, remove the image from the app
                     if message.contains("deleted successfully") {
                         DispatchQueue.main.async {
-                            // Remove the image from editedMedia array
+                            // Remove the image from the editedMedia array and reset selected image
                             self.editedMedia.removeAll()
                             self.selectedImage = nil
                             // Optionally, show a success message in the UI
@@ -192,8 +189,6 @@ struct MediaPickerView: View {
         }.resume()
     }
 
-
-
     struct CustomButtonStyleMedia: ButtonStyle {
         func makeBody(configuration: Configuration) -> some View {
             configuration.label
@@ -204,36 +199,7 @@ struct MediaPickerView: View {
                 .animation(.easeOut(duration: 0.2), value: configuration.isPressed)
         }
     }
-    
-    // Full Screen Image View
-    struct FullScreenImageView: View {
-        let image: UIImage
-        @Environment(\.presentationMode) var presentationMode
-
-        var body: some View {
-            ZStack {
-                Color.black.ignoresSafeArea()
-                Image(uiImage: image)
-                    .resizable()
-                    .scaledToFit()
-                    .edgesIgnoringSafeArea(.all)
-
-                VStack {
-                    HStack {
-                        Spacer()
-                        Button(action: { presentationMode.wrappedValue.dismiss() }) {
-                            Image(systemName: "xmark.circle.fill")
-                                .font(.largeTitle)
-                                .foregroundColor(.white)
-                                .padding()
-                        }
-                    }
-                    Spacer()
-                }
-            }
-        }
-    }
-
 }
+
 
 
