@@ -37,7 +37,7 @@ struct IntroView: View {
 
                 // App Header
                 Text("Welcome to NoteBlocks")
-                    .font(.custom("AmericanTypewriter-Bold", size: 25)) // Replace with your preferred font
+                    .font(.system(size: 26))
                     .padding(.top, 1)
                     .padding(.bottom, 1)
 
