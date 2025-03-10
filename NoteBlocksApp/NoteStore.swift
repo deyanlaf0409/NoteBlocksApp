@@ -465,7 +465,31 @@ class NoteStore: ObservableObject {
     // MARK: - Server Delete Method
     
     private func deleteNoteOnServer(noteId: UUID, completion: @escaping (Result<Void, Error>) -> Void) {
-        guard let url = URL(string: "http://192.168.0.222/project/API/deleteNote.php") else {
+        removeImageFromServer(noteId: noteId) { result in
+            switch result {
+            case .success:
+                print("Image(s) removed successfully or no media found. Proceeding to delete note.")
+                self.performNoteDeletion(noteId: noteId, completion: completion)
+
+            case .failure(let error):
+                let errorMessage = (error as NSError).userInfo[NSLocalizedDescriptionKey] as? String ?? ""
+
+                // If the error message is "No media found for this note", proceed with note deletion
+                if errorMessage.contains("No media found for this note") {
+                    print("No media found, but continuing to delete the note.")
+                    self.performNoteDeletion(noteId: noteId, completion: completion)
+                } else {
+                    print("Failed to remove image: \(errorMessage)")
+                    completion(.failure(error)) // Stop deletion for other errors
+                }
+            }
+        }
+    }
+
+
+    // Function to remove the image before deleting the note
+    private func removeImageFromServer(noteId: UUID, completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let url = URL(string: "http://192.168.0.222/project/API/removeImage.php") else {
             completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
             return
         }
@@ -475,13 +499,11 @@ class NoteStore: ObservableObject {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
         let json: [String: Any] = [
-            "note_id": noteId.uuidString
+            "noteID": noteId.uuidString
         ]
 
         do {
             let jsonData = try JSONSerialization.data(withJSONObject: json, options: [])
-            let jsonString = String(data: jsonData, encoding: .utf8)
-            print("Sending JSON for delete: \(jsonString ?? "nil")")
             request.httpBody = jsonData
         } catch {
             completion(.failure(error))
@@ -505,6 +527,48 @@ class NoteStore: ObservableObject {
 
         task.resume()
     }
+
+    // Function to delete the note after images are removed
+    private func performNoteDeletion(noteId: UUID, completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let url = URL(string: "http://192.168.0.222/project/API/deleteNote.php") else {
+            completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let json: [String: Any] = [
+            "note_id": noteId.uuidString
+        ]
+
+        do {
+            let jsonData = try JSONSerialization.data(withJSONObject: json, options: [])
+            request.httpBody = jsonData
+        } catch {
+            completion(.failure(error))
+            return
+        }
+
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+
+            guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+                let errorMessage = String(data: data ?? Data(), encoding: .utf8) ?? "Unknown error"
+                completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: errorMessage])))
+                return
+            }
+
+            completion(.success(()))
+        }
+
+        task.resume()
+    }
+
     
     
     // MARK: - Server Add Folder Method

@@ -93,53 +93,170 @@ struct NoteDetailView: View {
         if let index = noteStore.archivedNotes.firstIndex(where: { $0.id == note.id }) {
             noteStore.archivedNotes.remove(at: index)
             
+            // Attempt to delete the associated image
+            deleteImageForNote(noteId: note.id)
+            
             // Save the changes
             noteStore.saveNotes()
             
-            print("Note deleted locally.")
-            
+            print("Note and associated image deleted locally.")
+
             // Go back to the previous screen
             presentationMode.wrappedValue.dismiss()
+        } else {
+            print("Note not found in archived notes.")
         }
     }
+
+    // Function to delete an image based on the note's UUID
+    private func deleteImageForNote(noteId: UUID) {
+        let fileName = noteId.uuidString + ".png"
+        let fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent(fileName)
+
+        if FileManager.default.fileExists(atPath: fileURL.path) {
+            do {
+                try FileManager.default.removeItem(at: fileURL)
+                print("Image deleted: \(fileURL.path)")
+            } catch {
+                print("Failed to delete image: \(error.localizedDescription)")
+            }
+        } else {
+            print("No image found for note: \(noteId.uuidString)")
+        }
+    }
+
     
     private func restoreNote(_ note: Note) {
         // Remove the note from the archived notes list
         if let index = noteStore.archivedNotes.firstIndex(where: { $0.id == note.id }) {
             noteStore.archivedNotes.remove(at: index)
-            
+
             // Update the note's state and add it back to the active notes list
             var restoredNote = note
             restoredNote.isArchived = false
-            
+
             noteStore.notes.append(restoredNote)
-            
+
             // Save the changes locally
             noteStore.sortNotes()
-            
+
             print("Note restored locally.")
-            
+
             presentationMode.wrappedValue.dismiss()
-            
-            // Sync with the server if the user is logged in
+
+            // Check if user is a guest
             let userId = UserDefaults.standard.string(forKey: "userId") ?? ""
             if userId.isEmpty {
-                print("Guest user: Note restored locally.")
-            } else {
-                // Sync the restored note with the server
-                noteStore.addNoteOnServer(note: restoredNote, userId: userId) { result in
-                    switch result {
-                    case .success:
-                        print("Note restored successfully on the server.")
-                    case .failure(let error):
-                        print("Failed to restore note on the server: \(error.localizedDescription)")
+                print("Guest user: Note restored locally. No server sync required.")
+                return
+            }
+
+            // Restore the note on the server first
+            restoreNoteOnServer(restoredNote, userId: userId) { result in
+                switch result {
+                case .success:
+                    print("Note restored successfully on the server.")
+
+                    // After restoring, check for an existing image and upload if found
+                    if let imagePath = getImagePathForNote(noteId: note.id),
+                       let image = UIImage(contentsOfFile: imagePath) {
+                        print("Image found for restored note. Uploading...")
+
+                        uploadImage(image: image, noteID: note.id) { uploadResult in
+                            switch uploadResult {
+                            case .success:
+                                print("Image successfully uploaded for restored note.")
+                            case .failure(let error):
+                                print("Failed to upload image: \(error.localizedDescription)")
+                            }
+                        }
+                    } else {
+                        print("No image found for this note.")
                     }
+
+                case .failure(let error):
+                    print("Failed to restore note on the server: \(error.localizedDescription)")
                 }
             }
         } else {
             print("Note not found in archived notes.")
         }
     }
+
+    // Function to restore the note on the server
+    private func restoreNoteOnServer(_ note: Note, userId: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        noteStore.addNoteOnServer(note: note, userId: userId) { result in
+            completion(result)
+        }
+    }
+
+    // Function to get image path based on note UUID
+    private func getImagePathForNote(noteId: UUID) -> String? {
+        let fileName = noteId.uuidString + ".png"
+        let fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent(fileName)
+
+        return FileManager.default.fileExists(atPath: fileURL.path) ? fileURL.path : nil
+    }
+
+    // Function to upload image
+    private func uploadImage(image: UIImage, noteID: UUID, completion: @escaping (Result<Void, Error>) -> Void) {
+        let userId = UserDefaults.standard.string(forKey: "userId") ?? ""
+        if userId.isEmpty {
+            print("Guest user: Image will not be uploaded.")
+            completion(.success(()))  // Consider this as success since no upload is needed
+            return
+        }
+
+        guard let imageData = image.pngData() else {
+            completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to convert image to PNG"])))
+            return
+        }
+
+        guard let url = URL(string: "http://192.168.0.222/project/API/uploadImage.php") else {
+            completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        
+        let boundary = "Boundary-\(UUID().uuidString)"
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+
+        var body = Data()
+        
+        // Note ID
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"noteID\"\r\n\r\n".data(using: .utf8)!)
+        body.append("\(noteID.uuidString)\r\n".data(using: .utf8)!)
+
+        // Image Data
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"file\"; filename=\"\(noteID.uuidString).png\"\r\n".data(using: .utf8)!)
+        body.append("Content-Type: image/png\r\n\r\n".data(using: .utf8)!)
+        body.append(imageData)
+        body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
+
+        request.httpBody = body
+
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+
+            guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+                let errorMessage = String(data: data ?? Data(), encoding: .utf8) ?? "Unknown error"
+                completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: errorMessage])))
+                return
+            }
+
+            completion(.success(()))
+        }
+
+        task.resume()
+    }
+
 }
 
 private func authenticateUser(completion: @escaping (Bool) -> Void) {

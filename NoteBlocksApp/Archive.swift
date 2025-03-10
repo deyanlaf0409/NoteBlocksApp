@@ -59,11 +59,35 @@ struct ArchiveView: View {
         }
     }
 
-    // Function to delete all archived notes
+    // Function to delete all archived notes and their associated images
     private func deleteAllArchivedNotes() {
+        for note in noteStore.archivedNotes {
+            deleteImageForNote(noteId: note.id) // Delete associated image
+        }
+        
         noteStore.archivedNotes.removeAll() // Clear the archive
-        noteStore.saveNotes() // Ensure persistence if needed
+        noteStore.saveNotes() // Ensure persistence
+
+        print("All archived notes and their images have been deleted.")
     }
+
+    // Function to delete an image associated with a note
+    private func deleteImageForNote(noteId: UUID) {
+        let fileName = noteId.uuidString + ".png"
+        let fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent(fileName)
+
+        if FileManager.default.fileExists(atPath: fileURL.path) {
+            do {
+                try FileManager.default.removeItem(at: fileURL)
+                print("Deleted image for note: \(noteId.uuidString)")
+            } catch {
+                print("Failed to delete image for note: \(noteId.uuidString). Error: \(error.localizedDescription)")
+            }
+        } else {
+            print("No image found for note: \(noteId.uuidString)")
+        }
+    }
+
 
     // Format Date
     private func formattedDate(_ date: Date) -> String {
