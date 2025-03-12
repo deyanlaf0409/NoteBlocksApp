@@ -368,6 +368,7 @@ struct Late_Night_NotesApp: App {
                         }
                     } else {
                         print("Error: No notes found in the response.")
+                        resetToInitialState()
                     }
 
                 case .failure(let error):
