@@ -260,24 +260,45 @@ struct Late_Night_NotesApp: App {
 
 
 
-
-
-
-
-
     private func resetToInitialState() {
         loggedInUser = nil
         showNotes = false
 
-        UserDefaults.standard.removePersistentDomain(forName: Bundle.main.bundleIdentifier!)
+        // Remove UserDefaults data
+        if let bundleID = Bundle.main.bundleIdentifier {
+            UserDefaults.standard.removePersistentDomain(forName: bundleID)
+        }
         UserDefaults.standard.removeObject(forKey: "loggedInUser")
         UserDefaults.standard.removeObject(forKey: "savedNotes")
         UserDefaults.standard.removeObject(forKey: "savedFolders")
         UserDefaults.standard.set(false, forKey: "isLoggedIn")
-        
+
+        // Remove all stored images NEEDS TESTING
+        //deleteAllStoredImages()
 
         print("App state reset to initial state.")
     }
+    
+    
+    
+    private func deleteAllStoredImages() {
+        let fileManager = FileManager.default
+        let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
+
+        do {
+            let fileURLs = try fileManager.contentsOfDirectory(at: documentsURL, includingPropertiesForKeys: nil)
+            for fileURL in fileURLs where fileURL.pathExtension == "png" {
+                try fileManager.removeItem(at: fileURL)
+            }
+            print("All images deleted from local storage.")
+        } catch {
+            print("Error deleting images: \(error)")
+        }
+    }
+
+    
+    
+
 
     private func fetchUserData() {
         guard let userId = UserDefaults.standard.value(forKey: "userId") as? Int else {
