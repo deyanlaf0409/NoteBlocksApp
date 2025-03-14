@@ -20,6 +20,29 @@ struct NoteDetailView: View {
                 .font(.title)
                 .padding()
             
+            Text(note.body)
+                .font(.body)
+                .padding()
+            
+            if !note.media.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 10) {
+                        ForEach(note.media, id: \.self) { mediaPath in
+                            if let uiImage = UIImage(contentsOfFile: mediaPath) {
+                                Image(uiImage: uiImage)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 150, height: 150)
+                                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                                    .padding(.top, 10)
+                            }
+                        }
+                    }
+                    .padding()
+                }
+            }
+
+            
             Text("Created: \(formattedDate(note.dateCreated))")
                 .font(.subheadline)
                 .foregroundColor(.gray)
