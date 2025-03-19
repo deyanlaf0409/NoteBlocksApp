@@ -422,6 +422,74 @@ class NoteStore: ObservableObject {
     }
     
     
+    
+    public func sendNoteOnServer(note: Note, userId: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let url = URL(string: "http://192.168.0.222/project/API/sendNote.php") else {
+            completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS"
+        let formattedDateCreated = dateFormatter.string(from: note.dateCreated)
+        let formattedDateModified = dateFormatter.string(from: note.dateModified)
+
+        let json: [String: Any] = [
+            "note_id": note.id.uuidString,
+            "user_id": userId,
+            "text": note.text,
+            "body": note.body,
+            "dateCreated": formattedDateCreated,
+            "dateModified": formattedDateModified,
+            //"folderId": note.folderID?.uuidString ?? "",
+            //"media": note.media // This is now an array
+        ]
+
+        do {
+            let jsonData = try JSONSerialization.data(withJSONObject: json, options: [])
+            print("Sending JSON: \(String(data: jsonData, encoding: .utf8) ?? "nil")")
+            request.httpBody = jsonData
+        } catch {
+            completion(.failure(error))
+            return
+        }
+
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+
+            guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+                let errorMessage = String(data: data ?? Data(), encoding: .utf8) ?? "Unknown error"
+                completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: errorMessage])))
+                return
+            }
+
+            // If media is not empty, attempt to upload images
+            // Check if note.media exists and is not empty
+            if !note.media.isEmpty {
+                for mediaPath in note.media {
+                    if let image = UIImage(contentsOfFile: mediaPath) {
+                        self.uploadImage(image: image, noteID: note.id)
+                    } else {
+                        print("Invalid image file at path: \(mediaPath)")
+                    }
+                }
+            }
+
+
+            completion(.success(()))
+        }
+
+        task.resume()
+    }
+    
+    
     //MARK: - Server Add Method
     
     public func addNoteOnServer(note: Note, userId: String, completion: @escaping (Result<Void, Error>) -> Void) {

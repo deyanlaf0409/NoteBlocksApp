@@ -5,6 +5,10 @@ import LocalAuthentication
 struct EditNoteView: View {
     @Binding var note: Note
     let username: String
+    
+    let userId = UserDefaults.standard.string(forKey: "userId") ?? ""
+    @State private var friends: [Friend] = []
+    
     @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject var noteStore: NoteStore
 
@@ -17,6 +21,7 @@ struct EditNoteView: View {
     @State private var editedMedia: [String] = []
     @State private var showingMediaSheet: Bool = false
     @State private var showLoginModal = false
+    @State private var showFriendList = false
     
 
     var body: some View {
@@ -169,7 +174,7 @@ struct EditNoteView: View {
                     Button(action: { if username == "Guest" { // Replace with actual authentication logic
                         showLoginModal.toggle()
                     } else {
-                        // Future functionality for logged-in users
+                        showFriendList.toggle()
                     } }) {
                         VStack {
                             Image("paperplane")
@@ -185,6 +190,9 @@ struct EditNoteView: View {
                         }
                     }
                     .buttonStyle(CustomButtonStyle())
+                    .sheet(isPresented: $showFriendList) {
+                        FriendsList(friends:friends, note:note) // A modal for guest users
+                    }
 
 
                     
@@ -242,6 +250,7 @@ struct EditNoteView: View {
                         reminderDate = note.reminderDate
                         noteStore.loadFolders()
                         selectedFolderId = note.folderID
+                        fetchFriends()
                     } else {
                         // If authentication fails, exit or show an error
                         presentationMode.wrappedValue.dismiss() // Or show an alert
@@ -257,6 +266,7 @@ struct EditNoteView: View {
                 reminderDate = note.reminderDate
                 noteStore.loadFolders()
                 selectedFolderId = note.folderID
+                fetchFriends()
             }
         }
 
@@ -344,6 +354,35 @@ struct EditNoteView: View {
             }
         }
     }
+    
+    func fetchFriends() {
+        guard !userId.isEmpty else {
+            DispatchQueue.main.async {
+                print("No userId found.")
+            }
+            return
+        }
+        
+        
+        let parameters = ["action": "list_friends", "user_id": userId]
+        
+        NetworkManager.shared.makeRequest(parameters: parameters) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let jsonResponse):
+                    if let friendsData = jsonResponse["friends"] as? [[String: Any]] {
+                        self.friends = friendsData.compactMap { data in
+                            guard let id = data["id"] as? String,
+                                  let username = data["username"] as? String else { return nil }
+                            return Friend(id: id, username: username)
+                        }
+                    }
+                case .failure(_):
+                    print("Failed to fetch friends")
+                }
+            }
+        }
+    }
 }
 
 
@@ -393,6 +432,7 @@ struct ReminderPicker: View {
         }
     }
 }
+
 
 private let dateFormatter: DateFormatter = {
     let formatter = DateFormatter()
