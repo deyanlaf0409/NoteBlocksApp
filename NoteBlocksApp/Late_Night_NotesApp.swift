@@ -25,6 +25,7 @@ struct Late_Night_NotesApp: App {
                     }
                     .onAppear {
                         fetchUserData()
+                        startPeriodicFetch()
                     }
             } else {
                 IntroView(
@@ -39,6 +40,13 @@ struct Late_Night_NotesApp: App {
             }
         }
     }
+    
+    
+    private func startPeriodicFetch() {
+            Timer.scheduledTimer(withTimeInterval: 10, repeats: true) { _ in  // Every 5 minutes
+                fetchUserData()
+            }
+        }
 
     private func handleDeepLink(url: URL) {
         guard url.scheme == "latenightnotes", let host = url.host else {
