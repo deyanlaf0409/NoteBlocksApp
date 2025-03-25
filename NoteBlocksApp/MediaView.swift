@@ -11,6 +11,7 @@ import PhotosUI
 import UIKit
 
 struct MediaPickerView: View {
+    @Binding var note: Note
     let noteID: UUID
     @Environment(\.presentationMode) var presentationMode
     @Binding var editedMedia: [String] // Assuming this stores file paths now
@@ -123,7 +124,8 @@ struct MediaPickerView: View {
                         // Save the image and update the editedMedia immediately
                         if let filePath = saveImage(image: newImage) {
                             DispatchQueue.main.async {
-                                editedMedia = [filePath] // Directly update the media array on the main thread
+                                editedMedia = [filePath]
+                                note.media = editedMedia
                             }
                         }
                     }
@@ -138,7 +140,8 @@ struct MediaPickerView: View {
                         // Save the image and update the editedMedia immediately
                         if let filePath = saveImage(image: newImage) {
                             DispatchQueue.main.async {
-                                editedMedia = [filePath] // Directly update the media array on the main thread
+                                editedMedia = [filePath]
+                                note.media = editedMedia
                             }
                         }
                     }
@@ -220,10 +223,12 @@ struct MediaPickerView: View {
                    let message = jsonResponse["message"] as? String {
                     print(message)
 
-                    if message.contains("deleted successfully") {
+                    if message.contains("removed") {
                         DispatchQueue.main.async {
                             self.editedMedia.removeAll()
                             self.selectedImage = nil
+                            self.note.media = []
+                            self.editedMedia = []
                             print("Image removed from app as well.")
                         }
                     }

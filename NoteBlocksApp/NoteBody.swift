@@ -32,6 +32,17 @@ struct CustomTextView: UIViewRepresentable {
         func textViewDidEndEditing(_ textView: UITextView) {
             parent.isEditing = false
         }
+        
+        @objc func handleTap(_ sender: UITapGestureRecognizer) {
+            guard let textView = sender.view as? UITextView else { return }
+            if parent.isEditing {
+                textView.resignFirstResponder() // Dismiss keyboard on second tap
+                parent.isEditing = false
+            } else {
+                textView.becomeFirstResponder() // Focus on first tap
+                parent.isEditing = true
+            }
+        }
     }
 
     func makeCoordinator() -> Coordinator {
@@ -40,13 +51,11 @@ struct CustomTextView: UIViewRepresentable {
 
     func makeUIView(context: Context) -> UITextView {
         let textView = UITextView()
-
         textView.delegate = context.coordinator
         textView.font = UIFont.systemFont(ofSize: 18)
-        textView.textColor = UIColor.label // Default text color
+        textView.textColor = UIColor.label
         textView.backgroundColor = UIColor.systemGray6
         textView.layer.cornerRadius = 10
-        textView.layer.borderWidth = 0  // Removed the border
         textView.returnKeyType = .done
         textView.autocapitalizationType = .sentences
 
@@ -55,6 +64,10 @@ struct CustomTextView: UIViewRepresentable {
             textView.text = placeholder
             textView.textColor = UIColor.lightGray
         }
+
+        // Add tap gesture recognizer
+        let tapGesture = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleTap(_:)))
+        textView.addGestureRecognizer(tapGesture)
 
         return textView
     }
@@ -76,6 +89,7 @@ struct CustomTextView: UIViewRepresentable {
         }
     }
 }
+
 
 struct NoteBody: View {
     @Binding var text: String

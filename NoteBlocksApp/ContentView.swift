@@ -105,7 +105,7 @@ struct ContentView: View {
             
             Text("No internet connection")
                 .font(.headline)
-                .foregroundColor(.blue)
+                .foregroundColor(.black)
                 .padding()
 
             Button(action: {
@@ -437,9 +437,9 @@ struct ContentView: View {
                     .font(.subheadline)
                     .foregroundColor(.gray)
 
-                Text("Modified: \(formattedDate(note.dateModified))")
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
+                //Text("Modified: \(formattedDate(note.dateModified))")
+                    //.font(.subheadline)
+                    //.foregroundColor(.gray)
             }
         }
     }

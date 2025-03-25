@@ -397,12 +397,12 @@ struct Late_Night_NotesApp: App {
                         }
                     } else {
                         print("Error: No notes found in the response.")
-                        resetToInitialState()
+                        //resetToInitialState()
                     }
 
                 case .failure(let error):
                     print("Failed to fetch notes from server: \(error.localizedDescription)")
-                    resetToInitialState()
+                    //esetToInitialState()
                 }
             }
         }

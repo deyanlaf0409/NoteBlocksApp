@@ -83,6 +83,11 @@ struct EditNoteView: View {
             NoteBody(text: $editedBody)
                 .padding(.top, 3)   // Removed any additional top padding
                 .padding(.bottom, 3)
+                .onChange(of: editedBody) { oldValue, newValue in
+                        note.body = newValue
+                        note.dateModified = Date()
+                        //noteStore.updateNoteText($note, with: newValue)
+                    }
 
             
             VStack  {
@@ -291,7 +296,7 @@ struct EditNoteView: View {
             ReminderPicker(reminderDate: $reminderDate)
         }
         .sheet(isPresented: $showingMediaSheet) {
-            MediaPickerView(noteID: note.id, editedMedia: $editedMedia)
+            MediaPickerView(note: $note, noteID: note.id, editedMedia: $editedMedia)
                 .presentationDetents([.height(450), .large])
                 .presentationDragIndicator(.visible)
                 }
