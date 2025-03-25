@@ -119,15 +119,32 @@ struct EditNoteView: View {
                 HStack {
                     Button(action: { showingMediaSheet.toggle() }) {
                         VStack {
-                            Image("imagemenu")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 24, height: 24) // Base size
-                                .scaleEffect(1.4) // Increase size without affecting layout
-                            
-                            Text("Image")
-                                .font(.footnote)
-                                .foregroundColor(.primary)
+                            if editedMedia.isEmpty {
+                                Image("imagemenu")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 24, height: 24) // Base size
+                                    .scaleEffect(1.4) // Increase size without affecting layout
+                                
+                                Text("Image")
+                                    .font(.footnote)
+                                    .foregroundColor(.primary)
+                                
+                            } else {
+                                
+                                HStack {
+                                    ForEach(0..<editedMedia.count, id: \.self) { index in
+                                        // Load image from file path
+                                        if let uiImage = UIImage(contentsOfFile: editedMedia[index]) {
+                                            Image(uiImage: uiImage)
+                                                .resizable()
+                                                .scaledToFit()
+                                                .frame(width: 50, height: 50) // Base size
+                                                .scaleEffect(1.4) // Increase size without affecting layout
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                     .buttonStyle(CustomButtonStyle())

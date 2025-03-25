@@ -95,6 +95,14 @@ struct ContentView: View {
 
     private var noConnectionView: some View {
         VStack {
+            
+            Image("wifi")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 275, height: 275)
+                .cornerRadius(10)
+                .padding(.top, 1)
+            
             Text("No internet connection")
                 .font(.headline)
                 .foregroundColor(.blue)

@@ -118,13 +118,51 @@ struct MediaPickerView: View {
         .padding()
         .sheet(isPresented: $showImagePicker) {
             ImagePicker(noteID: noteID, selectedImage: $selectedImage, editedMedia: $editedMedia)
+                .onChange(of: selectedImage) { oldValue, newImage in
+                    if let newImage = newImage {
+                        // Save the image and update the editedMedia immediately
+                        if let filePath = saveImage(image: newImage) {
+                            DispatchQueue.main.async {
+                                editedMedia = [filePath] // Directly update the media array on the main thread
+                            }
+                        }
+                    }
+                }
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showCamera) {
             CameraPicker(selectedImage: $selectedImage, editedMedia: $editedMedia, noteID: noteID)
+                .onChange(of: selectedImage) { oldValue, newImage in
+                    if let newImage = newImage {
+                        // Save the image and update the editedMedia immediately
+                        if let filePath = saveImage(image: newImage) {
+                            DispatchQueue.main.async {
+                                editedMedia = [filePath] // Directly update the media array on the main thread
+                            }
+                        }
+                    }
+                }
                 .presentationDetents([.large, .large])
                 .presentationDragIndicator(.visible)
+        }
+
+
+
+
+    }
+    
+    private func saveImage(image: UIImage) -> String? {
+        guard let imageData = image.pngData() else { return nil }
+        let fileName = noteID.uuidString + ".png"  // Use noteID as file name
+        let fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent(fileName)
+        
+        do {
+            try imageData.write(to: fileURL)
+            return fileURL.path  // Return file path as string
+        } catch {
+            print("Error saving image: \(error)")
+            return nil
         }
     }
 
