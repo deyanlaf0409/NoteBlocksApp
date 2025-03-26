@@ -39,6 +39,16 @@ struct EditNoteView: View {
             .background(RoundedRectangle(cornerRadius: 25).fill(Color(.systemGray6)))
             .padding(.horizontal, 10)
             
+            
+            NoteBody(text: $editedBody)
+                .padding(.top, 3)   // Removed any additional top padding
+                .padding(.bottom, 3)
+                .onChange(of: editedBody) { oldValue, newValue in
+                        note.body = newValue
+                        note.dateModified = Date()
+                        //noteStore.updateNoteText($note, with: newValue)
+                    }
+            
             HStack {
                 Image("folder") // Replace with your actual image asset name
                         .resizable()
@@ -78,16 +88,6 @@ struct EditNoteView: View {
                 }
             }
             .padding(.horizontal)
-            
-            
-            NoteBody(text: $editedBody)
-                .padding(.top, 3)   // Removed any additional top padding
-                .padding(.bottom, 3)
-                .onChange(of: editedBody) { oldValue, newValue in
-                        note.body = newValue
-                        note.dateModified = Date()
-                        //noteStore.updateNoteText($note, with: newValue)
-                    }
 
             
             VStack  {
@@ -257,7 +257,7 @@ struct EditNoteView: View {
             }
 
         }
-        .navigationTitle("View Block")
+        .navigationTitle("View Card")
         .onAppear {
             if note.locked {
                 // Ask for authentication if the note is locked

@@ -263,9 +263,10 @@ struct RequestRow: View {
     var body: some View {
         HStack {
             Image(systemName: "person.fill")
+                .padding(.leading, 25)
             Text(request.username)
                 .font(.headline)
-                .padding(.leading, 15)
+                //.padding(.leading, 15)
 
             Spacer()
 

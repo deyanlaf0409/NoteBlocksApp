@@ -15,12 +15,10 @@
 			</array>
 		</dict>
 	</array>
-    
-    <key>NSPhotoLibraryUsageDescription</key>
-    <string>Allow access to select and save images.</string>
-
-    <key>NSCameraUsageDescription</key>
-    <string>Allow access to take photos.</string>
-
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>processing</string>
+		<string>remote-notification</string>
+	</array>
 </dict>
 </plist>

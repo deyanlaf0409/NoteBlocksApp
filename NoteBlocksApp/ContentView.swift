@@ -33,6 +33,8 @@ struct ContentView: View {
     @State private var showProfileModal = false
     @State private var showLogoutConfirmation = false
     
+    @State private var isDarkMode = UserDefaults.standard.bool(forKey: "isDarkMode")  // Track color mode
+    
     @State private var randomImageIndex = Int.random(in: 0..<7)
 
         private let profileImages = [
@@ -87,6 +89,14 @@ struct ContentView: View {
                 Spacer()
                     .onAppear {
                         randomImageIndex = Int.random(in: 0..<7)
+                        
+                        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+                                        if isDarkMode {
+                                            windowScene.windows.first?.overrideUserInterfaceStyle = .dark
+                                        } else {
+                                            windowScene.windows.first?.overrideUserInterfaceStyle = .light
+                                        }
+                                    }
                     }
                 bottomTextWithIcon
             }
@@ -140,7 +150,28 @@ struct ContentView: View {
             )
         }
         .navigationTitle("Home")
-        .navigationBarItems(trailing: EditButton())
+        .navigationBarItems(trailing: HStack {
+            // Toggle Mode Button
+            Button(action: {
+                isDarkMode.toggle() // Toggle between light and dark mode
+                
+                // Save the current mode to UserDefaults
+                UserDefaults.standard.set(isDarkMode, forKey: "isDarkMode")
+                
+                // Get the active UIWindowScene
+                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+                    if isDarkMode {
+                        windowScene.windows.first?.overrideUserInterfaceStyle = .dark
+                    } else {
+                        windowScene.windows.first?.overrideUserInterfaceStyle = .light
+                    }
+                }
+            }) {
+                Image(systemName: isDarkMode ? "sun.max.fill" : "moon.fill")
+                    .foregroundColor(.primary)
+            }
+            EditButton()
+        })
     }
 
     private var userHeader: some View {
@@ -281,7 +312,7 @@ struct ContentView: View {
             Image(systemName: "magnifyingglass")
                 .foregroundColor(.gray)
 
-            TextField("Search block", text: $searchText)
+            TextField("Search card", text: $searchText)
                 .foregroundColor(.primary)
                 .padding(5)
         }
@@ -335,10 +366,8 @@ struct ContentView: View {
 
     private var noteTextField: some View {
         HStack {
-            Image(systemName: "cube.box")
-                .foregroundColor(.gray)
-
-            TextField("Enter new block", text: $newNoteText)
+            
+            TextField("Enter new card name", text: $newNoteText)
                 .foregroundColor(.primary)
                 .padding(5)
         }
