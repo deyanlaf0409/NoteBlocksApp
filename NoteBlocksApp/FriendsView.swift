@@ -33,6 +33,13 @@ struct FriendsView: View {
             
             // If there are no friends, show a message
             if friends.isEmpty {
+                Image("friends") // Image should render here
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 250, height: 250)
+                    .opacity(0.9)
+                    .padding(.top, 1)
+                
                 Text("You don't have any friends")
                     .font(.title2)
                     .foregroundColor(.gray)

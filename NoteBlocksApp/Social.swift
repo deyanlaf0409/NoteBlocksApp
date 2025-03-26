@@ -103,8 +103,12 @@ struct FriendRequestsView: View {
         VStack {
             if friendRequests.isEmpty {
                 VStack(spacing: 0) { // Set spacing to 0 to remove extra space
-                    Text("👥")
-                        .font(.system(size: 60)) // Adjust size
+                    Image("requests") // Image should render here
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 250, height: 250)
+                        .opacity(0.9)
+                        .padding(.top, 1) // Adjust size
                     
                     Text("No pending friend requests")
                         .foregroundColor(.gray)
@@ -258,6 +262,7 @@ struct RequestRow: View {
 
     var body: some View {
         HStack {
+            Image(systemName: "person.fill")
             Text(request.username)
                 .font(.headline)
                 .padding(.leading, 15)

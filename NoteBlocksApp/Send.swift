@@ -24,6 +24,13 @@ struct FriendsList: View {
             VStack {
                 if friends.isEmpty {
                     Spacer() // Push content up
+                    Image("mailbox") // Image should render here
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 300, height: 300)
+                        .opacity(0.9)
+                        .padding(.top, 1)
+                    
                     Text("You don't have any friends")
                         .font(.title2)
                         .foregroundColor(.gray)
