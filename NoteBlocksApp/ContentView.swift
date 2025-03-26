@@ -457,6 +457,16 @@ struct ContentView: View {
 
     private func noteInfo(note: Note) -> some View {
         HStack {
+            // Show image if note has media
+            if let firstImagePath = note.media.first, let uiImage = UIImage(contentsOfFile: firstImagePath) {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 65, height: 65) // Adjust size as needed
+                    .clipShape(RoundedRectangle(cornerRadius: 5))
+                    .padding(.trailing, 8)
+                    .blur(radius: note.locked ? 10 : 0)
+            }
 
             VStack(alignment: .leading) {
                 Text(note.text)
@@ -465,13 +475,11 @@ struct ContentView: View {
                 Text("Created: \(formattedDate(note.dateCreated))")
                     .font(.subheadline)
                     .foregroundColor(.gray)
-
-                //Text("Modified: \(formattedDate(note.dateModified))")
-                    //.font(.subheadline)
-                    //.foregroundColor(.gray)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
+
 
 
     private func noteIcons(note: Note) -> some View {
