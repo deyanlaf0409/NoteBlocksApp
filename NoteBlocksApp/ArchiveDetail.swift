@@ -87,20 +87,18 @@ struct NoteDetailView: View {
         }
         .navigationTitle("Note Details")
         .padding()
+        .blur(radius: (note.locked && !isAuthenticated) ? 10 : 0)
         .onAppear {
-            // Check if the note is locked and ask for authentication
-            if note.locked && !isAuthenticated {
-                authenticateUser { success in
-                    if success {
-                        isAuthenticated = true
-                    } else {
-                        // If authentication failed or was canceled, dismiss the view
-                        print("Authentication failed or canceled!")
-                        presentationMode.wrappedValue.dismiss()
+                if note.locked && !isAuthenticated {
+                    authenticateUser { success in
+                        if success {
+                            isAuthenticated = true
+                        } else {
+                            presentationMode.wrappedValue.dismiss()
+                        }
                     }
                 }
             }
-        }
     }
     
     private func formattedDate(_ date: Date) -> String {
