@@ -109,7 +109,7 @@ struct ProfileView: View {
                 fetchFriends()
                 generateQRCodeLocally()
             }
-            .navigationTitle("Profile")
+            //.navigationTitle("Profile")
             .navigationBarTitleDisplayMode(.inline)
             .confirmationDialog("Are you sure you want to log out?", isPresented: $showLogoutConfirmation, titleVisibility: .visible) {
                 Button("Log Out") {

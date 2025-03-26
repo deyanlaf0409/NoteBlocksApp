@@ -40,6 +40,7 @@ struct FriendsView: View {
             } else {
                 List(friends) { friend in
                     HStack {
+                        Image(systemName: "person.fill")
                         Text(friend.username)
                         
                         Spacer()

@@ -51,9 +51,10 @@ struct ArchiveView: View {
         }
         .alert("Are you sure?", isPresented: $showDeleteConfirmation) {
             Button("Cancel", role: .cancel) { }
-            Button("Delete", role: .destructive) {
+            Button("Delete") {
                 deleteAllArchivedNotes()
             }
+            .foregroundColor(.orange)
         } message: {
             Text("This action will delete all archived notes permanently.")
         }

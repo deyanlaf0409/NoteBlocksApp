@@ -437,10 +437,13 @@ class NoteStore: ObservableObject {
         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS"
         let formattedDateCreated = dateFormatter.string(from: note.dateCreated)
         let formattedDateModified = dateFormatter.string(from: note.dateModified)
+        
+        let username = UserDefaults.standard.string(forKey: "loggedInUser") ?? ""
 
         let json: [String: Any] = [
             "note_id": note.id.uuidString,
             "user_id": userId,
+            "username": username,
             "text": note.text,
             "body": note.body,
             "dateCreated": formattedDateCreated,
