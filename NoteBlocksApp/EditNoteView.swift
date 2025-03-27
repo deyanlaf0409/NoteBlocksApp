@@ -241,6 +241,7 @@ struct EditNoteView: View {
                         
                         Button("Clear Reminder") {
                             self.reminderDate = nil
+                            cancelNotification(for: note)
                         }
                         .font(.system(size: 18, weight: .bold, design: .rounded))
                         .padding(.vertical, 10)
@@ -301,6 +302,11 @@ struct EditNoteView: View {
                 .presentationDragIndicator(.visible)
                 }
     }
+    
+    func cancelNotification(for note: Note) {
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [note.id.uuidString])
+    }
+
 
     private func saveNote() {
         note.text = editedText
@@ -319,8 +325,10 @@ struct EditNoteView: View {
         noteStore.updateNoteText($note, with: editedText)
 
         if let reminderDate = reminderDate {
-            scheduleNotification(for: note, at: reminderDate)
-        }
+                scheduleNotification(for: note, at: reminderDate)
+            } else {
+                cancelNotification(for: note) // Cancel if no reminder is set
+            }
 
         presentationMode.wrappedValue.dismiss()
     }

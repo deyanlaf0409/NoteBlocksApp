@@ -24,13 +24,21 @@ struct ArchiveView: View {
                 List {
                     ForEach(noteStore.archivedNotes.reversed()) { note in
                         NavigationLink(destination: NoteDetailView(note: note, noteStore: noteStore)) {
-                            VStack(alignment: .leading) {
-                                Text(note.text)
-                                    .font(.headline)
-                                Text("Archived: \(formattedDate(note.dateModified))")
-                                    .font(.subheadline)
-                                    .foregroundColor(.gray)
+                            HStack {
+                                VStack(alignment: .leading) {
+                                    Text(note.text)
+                                        .font(.headline)
+                                    Text("Archived: \(formattedDate(note.dateModified))")
+                                        .font(.subheadline)
+                                        .foregroundColor(.gray)
+                                }
+                                Spacer() // Pushes the lock icon to the right
+                                if note.locked {
+                                    Image(systemName: "lock.fill")
+                                        .foregroundColor(.gray)
+                                }
                             }
+                            .padding(.vertical, 8) // Adjust spacing for better layout
                         }
                     }
                 }
