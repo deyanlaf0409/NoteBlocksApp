@@ -95,7 +95,8 @@ struct Late_Night_NotesApp: App {
                                   let dateCreatedString = rawNote["dateCreated"] as? String,
                                   let dateModifiedString = rawNote["dateModified"] as? String,
                                   let highlightedString = rawNote["highlighted"] as? String,
-                                  let lockedString = rawNote["locked"] as? String else {
+                                  let lockedString = rawNote["locked"] as? String,
+                                  let sharedString = rawNote["shared"] as? String else {
                                 return
                             }
 
@@ -103,6 +104,7 @@ struct Late_Night_NotesApp: App {
                             let dateModified = dateFormatter.date(from: dateModifiedString) ?? Date()
                             let highlighted = (highlightedString == "t")
                             let locked = (lockedString == "t")
+                            let shared = (sharedString == "t")
                             let folderId: UUID? = (rawNote["folderId"] as? String).flatMap(UUID.init)
                             
                             // Initialize an empty media array for the note (ensure only one image is associated)
@@ -117,7 +119,8 @@ struct Late_Night_NotesApp: App {
                                             dateModified: dateModified,
                                             highlighted: highlighted,
                                             folderId: folderId,
-                                            locked: locked)
+                                            locked: locked,
+                                            shared: shared)
 
                             print("Raw note data: \(rawNote)")
 
@@ -338,7 +341,8 @@ struct Late_Night_NotesApp: App {
                                let dateCreatedString = noteDict["dateCreated"] as? String,
                                let dateModifiedString = noteDict["dateModified"] as? String,
                                let locked = noteDict["locked"] as? Bool,
-                               let highlighted = noteDict["highlighted"] as? Bool {
+                               let highlighted = noteDict["highlighted"] as? Bool,
+                               let shared = noteDict["shared"] as? Bool{
 
                                 let folderIdString = noteDict["folderId"] as? String
                                 let imageUrlString = noteDict["media"] as? String // Check for image URL
@@ -358,7 +362,8 @@ struct Late_Night_NotesApp: App {
                                                 dateModified: dateModified,
                                                 highlighted: highlighted,
                                                 folderId: folderIdString != nil ? UUID(uuidString: folderIdString!) ?? UUID() : nil,
-                                                locked: locked)
+                                                locked: locked,
+                                                shared: shared)
 
                                 // Check for the image URL and download if present
                                 if let imageUrlString = imageUrlString, let imageUrl = URL(string: imageUrlString) {

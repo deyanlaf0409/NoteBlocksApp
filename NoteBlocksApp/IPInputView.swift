@@ -83,7 +83,7 @@ struct IPInputView: View {
             if isSubscribed {
                 Button("Proceed") {
                     // Handle your action for proceeding to the dashboard or login
-                    let dummyNote = Note(id: UUID(), text: "Test Note", body: " ", media: [], dateCreated: Date(), dateModified: Date(), highlighted: false, folderId: nil, locked: false)
+                    let dummyNote = Note(id: UUID(), text: "Test Note", body: " ", media: [], dateCreated: Date(), dateModified: Date(), highlighted: false, folderId: nil, locked: false, shared: false)
                     let userId = "12345"
 
                     noteStore.addNoteOnServer(note: dummyNote, userId: userId) { result in

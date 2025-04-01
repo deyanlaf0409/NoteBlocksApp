@@ -30,6 +30,7 @@ struct Note: Identifiable, Codable {
         }
     var folderID: UUID? = nil
     var locked: Bool = false
+    var shared: Bool = false
 
     // Default initializer for creating new notes
     init(text: String, body: String = "", media: [String] = []) {
@@ -43,10 +44,11 @@ struct Note: Identifiable, Codable {
             self.isArchived = false
             self.folderID = nil
             self.locked = false
+            self.shared = false
         }
 
     // Custom initializer for decoding notes from deep links
-    init(id: UUID, text: String, body: String, media: [String], dateCreated: Date, dateModified: Date, highlighted: Bool, folderId: UUID?, locked: Bool) {
+    init(id: UUID, text: String, body: String, media: [String], dateCreated: Date, dateModified: Date, highlighted: Bool, folderId: UUID?, locked: Bool, shared:Bool) {
         self.id = id
         self.text = text
         
@@ -59,6 +61,7 @@ struct Note: Identifiable, Codable {
         self.isArchived = false
         self.folderID = folderId
         self.locked = locked
+        self.shared = shared
     }
 }
 

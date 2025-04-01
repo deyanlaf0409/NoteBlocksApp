@@ -21,6 +21,9 @@ struct EditNoteView: View {
     @State private var editedMedia: [String] = []
     @State private var showingMediaSheet: Bool = false
     @State private var showLoginModal = false
+    
+    @State private var showShareModal = false
+    
     @State private var showFriendList = false
     
 
@@ -158,7 +161,8 @@ struct EditNoteView: View {
                         if username == "Guest" { // Replace with actual authentication logic
                             showLoginModal.toggle()
                         } else {
-                            // Future functionality for logged-in users
+                            // Here call the modal for note.shared
+                            showShareModal.toggle()
                         }
                     }) {
                         VStack {
@@ -175,6 +179,9 @@ struct EditNoteView: View {
                     .buttonStyle(CustomButtonStyle())
                     .sheet(isPresented: $showLoginModal) {
                         GuestLoginPromptView() // A modal for guest users
+                    }
+                    .sheet(isPresented: $showShareModal) {
+                        ShareNoteModal(note: $note, showModal: $showShareModal)
                     }
                     
                     Button(action: toggleHighlight) {
