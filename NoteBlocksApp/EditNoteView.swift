@@ -370,7 +370,7 @@ struct EditNoteView: View {
         }
 
         let content = UNMutableNotificationContent()
-        content.title = "Reminder for your note"
+        content.title = "Reminder for your card"
         content.body = note.text
         content.sound = .default
 
@@ -484,7 +484,7 @@ private func authenticateUser(completion: @escaping (Bool) -> Void) {
 
     // Check if Face ID or Touch ID is available
     if context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
-        context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "Please authenticate to lock the note") { success, authenticationError in
+        context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "Please authenticate to lock the card") { success, authenticationError in
             DispatchQueue.main.async {
                 if success {
                     completion(true)
