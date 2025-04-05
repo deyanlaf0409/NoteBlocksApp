@@ -33,6 +33,9 @@ struct ContentView: View {
     @State private var showProfileModal = false
     @State private var showLogoutConfirmation = false
     
+    @State private var selectedImage: UIImage? = nil
+    @State private var showFullScreenImage = false
+    
     @State private var isDarkMode = UserDefaults.standard.bool(forKey: "isDarkMode")  // Track color mode
     
     @State private var randomImageIndex = Int.random(in: 0..<7)
@@ -192,6 +195,15 @@ struct ContentView: View {
             searchAndCreateNoteFields
             notesList
         }
+        .onChange(of: showFullScreenImage) { oldValue, newValue in
+                    if newValue {
+                        print("Full-screen image view triggered!")  // Debugging line
+                    }
+                }
+        .fullScreenCover(isPresented: $showFullScreenImage, content: {
+            FullScreenImageView(showFullScreenImage: $showFullScreenImage, image: selectedImage)
+        })
+
     }
 
     private var navigationButtons: some View {
@@ -462,11 +474,18 @@ struct ContentView: View {
                 Image(uiImage: uiImage)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 65, height: 65) // Adjust size as needed
+                    .frame(width: 65, height: 65)
                     .clipShape(RoundedRectangle(cornerRadius: 5))
                     .padding(.trailing, 8)
                     .blur(radius: note.locked ? 10 : 0)
+                    .onTapGesture {
+                        if !note.locked { // Optional: Only allow opening if unlocked
+                            selectedImage = uiImage
+                            showFullScreenImage = true
+                        }
+                    }
             }
+
 
             VStack(alignment: .leading) {
                 Text(note.text)
@@ -508,6 +527,51 @@ struct ContentView: View {
         return formatter.string(from: date)
     }
 }
+
+struct FullScreenImageView: View {
+    @Binding var showFullScreenImage: Bool  // Binding to control dismissal
+    let image: UIImage?
+
+    var body: some View {
+        ZStack {
+            Color.black.ignoresSafeArea()  // Background color for full screen
+
+            // Display the image if available
+            if let image = image {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.black)
+                    .edgesIgnoringSafeArea(.all)
+            } else {
+                // Fallback message if image is nil
+                Text("No image available")
+                    .foregroundColor(.white)
+                    .font(.largeTitle)
+                    .bold()
+            }
+
+            // Close Button at the top-right corner
+            HStack {
+                Spacer()
+                Button(action: {
+                    showFullScreenImage = false  // Dismiss the full-screen image
+                }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.white)
+                        .font(.system(size: 30))
+                        .padding()
+                }
+                .padding(.top)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)  // Align to the top-right corner
+        }
+    }
+}
+
+
+
 
 private var bottomTextWithIcon: some View {
     HStack {

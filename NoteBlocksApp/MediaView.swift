@@ -18,6 +18,8 @@ struct MediaPickerView: View {
     @State private var showImagePicker = false
     @State private var showCamera = false
     @State private var selectedImage: UIImage?
+    @State private var showFullScreenImage = false
+    @State private var selectedFullScreenImage: UIImage?
 
     var body: some View {
         VStack(spacing: 5) {
@@ -43,6 +45,10 @@ struct MediaPickerView: View {
                                     .clipShape(RoundedRectangle(cornerRadius: 10))
                                     .padding(.top, 0)
                                     .padding(.bottom, 0)
+                                    .onTapGesture {
+                                                    selectedFullScreenImage = uiImage
+                                                    showFullScreenImage = true
+                                                }
                             }
                         }
                     }
@@ -149,6 +155,51 @@ struct MediaPickerView: View {
                 .presentationDetents([.large, .large])
                 .presentationDragIndicator(.visible)
         }
+        .fullScreenCover(isPresented: $showFullScreenImage) {
+            if let image = selectedFullScreenImage {
+                ZStack(alignment: .topTrailing) {
+                    Color.black.ignoresSafeArea()
+                    
+                    VStack {
+                        Spacer()
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFit()
+                            .background(Color.black)
+                            .edgesIgnoringSafeArea(.all)
+                        Spacer()
+                        
+                        HStack {
+                            Spacer()
+                            Button(action: {
+                                UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
+                            }) {
+                                Label("Save Image", systemImage: "square.and.arrow.down")
+                                    .foregroundColor(.white)
+                                    .padding()
+                                    .background(Color.gray)
+                                    .clipShape(Capsule())
+                            }
+                            Spacer()
+                        }
+                        .padding(.bottom, 20)
+                    }
+                    
+                    // Close button in top-right corner
+                    Button(action: {
+                        showFullScreenImage = false
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.white)
+                            .font(.system(size: 30))
+                            .padding()
+                    }
+                }
+            }
+        }
+
+
+        
 
 
 
