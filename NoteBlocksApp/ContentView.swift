@@ -201,7 +201,7 @@ struct ContentView: View {
                     }
                 }
         .fullScreenCover(isPresented: $showFullScreenImage, content: {
-            FullScreenImageView(showFullScreenImage: $showFullScreenImage, image: selectedImage)
+            FullScreenImage(showFullScreenImage: $showFullScreenImage, image: selectedImage)
         })
 
     }
@@ -528,7 +528,7 @@ struct ContentView: View {
     }
 }
 
-struct FullScreenImageView: View {
+struct FullScreenImage: View {
     @Binding var showFullScreenImage: Bool  // Binding to control dismissal
     let image: UIImage?
 

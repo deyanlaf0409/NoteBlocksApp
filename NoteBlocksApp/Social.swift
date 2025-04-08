@@ -1,10 +1,21 @@
 import SwiftUI
 import AVFoundation
 
+import Combine
+
 struct FriendRequest: Identifiable {
     var id: String
     var username: String
 }
+
+struct SharedNote: Identifiable {
+    var id: String
+    var username: String
+    var text: String
+    var body: String
+    var mediaURL: String?
+}
+
 
 struct SocialView: View {
     @State private var searchText: String = ""
@@ -171,14 +182,13 @@ struct FriendSearchView: View {
     @Binding var alertMessage: String
     @State private var showScanner: Bool = false
 
+    @EnvironmentObject var noteStore: NoteStore  // <-- Access NoteStore from the environment
+
     var body: some View {
         VStack {
-            Text("Send a Friend Request ✉️")
-                .font(.headline)
-                .padding(.top)
 
             HStack {
-                TextField("Username", text: $searchText)
+                TextField("Enter username", text: $searchText)
                     .padding(7)
                     .background(RoundedRectangle(cornerRadius: 25).fill(Color(.systemGray6)))
                     .padding(.leading, 10)
@@ -195,7 +205,6 @@ struct FriendSearchView: View {
                 }
                 .disabled(searchText.isEmpty)
 
-                // QR Code Scanner Button
                 Button(action: {
                     showScanner = true
                 }) {
@@ -205,11 +214,27 @@ struct FriendSearchView: View {
                         .padding()
                 }
             }
+            .padding(.horizontal)
+
+ 
+
+            // Shared Notes Feed
+            if noteStore.sharedNotes.isEmpty {
+                ProgressView("Loading shared notes...")
+                    .onAppear {
+                        fetchSharedNotes()  // Fetch if the shared notes are not already loaded
+                    }
+            } else {
+                List(noteStore.sharedNotes) { note in  // Use sharedNotes from NoteStore
+                    SharedNoteRow(note: note)
+                }
+                .listStyle(PlainListStyle())
+            }
         }
         .sheet(isPresented: $showScanner) {
             QRScannerView { scannedUsername in
                 showScanner = false
-                sendFriendRequest(username: scannedUsername) // Send request using scanned username
+                sendFriendRequest(username: scannedUsername)
             }
         }
         .alert(isPresented: $showAlert) {
@@ -247,7 +272,173 @@ struct FriendSearchView: View {
         self.alertMessage = message
         self.showAlert = true
     }
+
+    // Function to trigger fetch if not already done
+    func fetchSharedNotes() {
+        // Only fetch if the notes are empty
+        if noteStore.sharedNotes.isEmpty {
+            noteStore.fetchSharedNotes()
+        }
+    }
 }
+
+class ImageCache {
+    static let shared = ImageCache()
+
+    private let cache = NSCache<NSURL, UIImage>()
+    
+    func getImage(for url: URL) -> UIImage? {
+        return cache.object(forKey: url as NSURL)
+    }
+    
+    func saveImage(_ image: UIImage, for url: URL) {
+        cache.setObject(image, forKey: url as NSURL)
+    }
+}
+
+
+
+struct SharedNoteRow: View {
+    var note: SharedNote
+    @State private var image: UIImage? = nil
+    @State private var isLoading = false
+    @State private var isImageFullScreen = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(note.username)
+                    .foregroundColor(.secondary)
+                Spacer()
+            }
+            Text(note.text)
+                .font(.headline)
+                .foregroundColor(.primary)
+            //Text(note.body)
+                //.font(.subheadline)
+                //.foregroundColor(.primary)
+
+            if let mediaURL = note.mediaURL, !mediaURL.isEmpty, let url = URL(string: mediaURL) {
+                ZStack {
+                    if isLoading {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: Color.orange))
+                            .scaleEffect(1.0)
+                            .frame(maxWidth: .infinity, maxHeight: 200)
+                    }
+
+                    if let image = image {
+                        Image(uiImage: image)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(maxHeight: 200)
+                            .clipped()
+                            .cornerRadius(10)
+                            .onTapGesture {
+                                isImageFullScreen = true
+                            }
+                    }
+                }
+                .onAppear {
+                    loadImage(from: url)
+                }
+                .sheet(isPresented: $isImageFullScreen) {
+                    FullScreenImageViewSocial(image: image)
+                }
+            }
+
+            // Use NavigationLink directly around the button
+            NavigationLink(destination: FullNoteView(note: note)) {
+                Text("Read")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .cornerRadius(15)
+                    .shadow(radius: 1)
+            }
+            .padding(.vertical, 4)
+            .background(Color.clear)  // Make sure it doesn't visually conflict
+        }
+    }
+
+    private func loadImage(from url: URL) {
+        // First, try to load from cache
+        if let cachedImage = ImageCache.shared.getImage(for: url) {
+            image = cachedImage
+            isLoading = false
+            return
+        }
+
+        // If not cached, download the image
+        isLoading = true
+        URLSession.shared.dataTask(with: url) { data, _, _ in
+            guard let data = data, let downloadedImage = UIImage(data: data) else {
+                DispatchQueue.main.async {
+                    isLoading = false
+                }
+                return
+            }
+
+            DispatchQueue.main.async {
+                // Save image to cache
+                ImageCache.shared.saveImage(downloadedImage, for: url)
+                self.image = downloadedImage
+                self.isLoading = false
+            }
+        }.resume()
+    }
+}
+
+
+// Full-screen image view
+struct FullScreenImageViewSocial: View {
+    var image: UIImage?
+    
+    var body: some View {
+        VStack {
+            if let image = image {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+                    .edgesIgnoringSafeArea(.all)
+            } else {
+                ProgressView("Loading image...")
+                    .progressViewStyle(CircularProgressViewStyle(tint: Color.orange))
+            }
+        }
+    }
+}
+
+// Full note modal
+struct FullNoteView: View {
+    var note: SharedNote
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 12) {
+                Text(note.username)
+                    .font(.subheadline)
+                    .padding(.bottom, 10)
+                    .frame(maxWidth: .infinity, alignment: .leading) // Align to the left
+
+                Text(note.body)
+                    .font(.headline)
+                    .padding(.bottom, 10)
+                    .frame(maxWidth: .infinity, alignment: .leading) // Align to the left
+            }
+            .padding()
+        }
+        .navigationBarTitle("Note Details", displayMode: .inline) // Optional: Add a title for the navigation bar
+    }
+}
+
+
+
+
+
+
+
 
 
 

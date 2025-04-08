@@ -9,6 +9,8 @@ import Foundation
 import SwiftUI
 
 class NoteStore: ObservableObject {
+    @Published var sharedNotes: [SharedNote] = []
+    
     @Published var notes: [Note] = [] {
         didSet {
             saveNotes()
@@ -37,6 +39,50 @@ class NoteStore: ObservableObject {
         loadNotes()
         loadArchivedNotes()
         loadFolders()
+    }
+    
+    
+    func fetchSharedNotes() {
+        guard let url = URL(string: "http://192.168.0.222/project/API/feed.php") else { return }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if error != nil {
+                DispatchQueue.main.async {
+                    //self.alertMessage = "Failed to load shared notes: \(error.localizedDescription)"
+                    //self.showAlert = true
+                }
+                return
+            }
+
+            guard let data = data else { return }
+
+            do {
+                if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+                   let feedArray = json["feed"] as? [[String: Any]] {
+                    DispatchQueue.main.async {
+                        self.sharedNotes = feedArray.compactMap { dict in
+                            guard let id = UUID().uuidString as String?,
+                                  let username = dict["username"] as? String,
+                                  let title = dict["title"] as? String,
+                                  let body = dict["body"] as? String else {
+                                return nil
+                            }
+                            let mediaURL = dict["media"] as? String
+                            return SharedNote(id: id, username: username, text: title, body: body, mediaURL: mediaURL)
+                        }
+                    }
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    //self.alertMessage = "Failed to parse shared notes"
+                    //self.showAlert = true
+                }
+            }
+        }.resume()
     }
     
     

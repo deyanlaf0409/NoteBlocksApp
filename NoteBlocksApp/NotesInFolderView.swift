@@ -104,7 +104,7 @@ struct NotesInFolderView: View {
         }
         .fullScreenCover(isPresented: $showFullScreenImage, content: {
             if let image = selectedImage {
-                FullScreenImageView(showFullScreenImage: $showFullScreenImage, image: image)
+                FullScreenImage(showFullScreenImage: $showFullScreenImage, image: image)
             } else {
                 Text("No image available")
                     .foregroundColor(.white)

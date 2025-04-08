@@ -26,6 +26,7 @@ struct Late_Night_NotesApp: App {
                     .onAppear {
                         fetchUserData()
                         startPeriodicFetch()
+                        noteStore.fetchSharedNotes()
                     }
             } else {
                 IntroView(
@@ -43,7 +44,7 @@ struct Late_Night_NotesApp: App {
     
     
     private func startPeriodicFetch() {
-            Timer.scheduledTimer(withTimeInterval: 10, repeats: true) { _ in  // Every 5 minutes
+            Timer.scheduledTimer(withTimeInterval: 15, repeats: true) { _ in  // Every 5 minutes
                 fetchUserData()
             }
         }
