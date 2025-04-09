@@ -3,17 +3,25 @@ import AVFoundation
 
 import Combine
 
-struct FriendRequest: Identifiable {
+struct FriendRequest: Identifiable, Hashable {
     var id: String
     var username: String
 }
 
-struct SharedNote: Identifiable {
+struct SharedNote: Identifiable, Hashable {
     var id: String
     var username: String
     var text: String
     var body: String
     var mediaURL: String?
+    
+    static func == (lhs: SharedNote, rhs: SharedNote) -> Bool {
+            return lhs.id == rhs.id
+        }
+
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(id) // Ensure hash is based on `id`, or any other properties you want to ensure uniqueness.
+        }
 }
 
 
@@ -295,6 +303,7 @@ class ImageCache {
         cache.setObject(image, forKey: url as NSURL)
     }
 }
+ 
 
 
 
@@ -311,13 +320,13 @@ struct SharedNoteRow: View {
                     .foregroundColor(.secondary)
                 Spacer()
             }
-            Text(note.text)
-                .font(.headline)
-                .foregroundColor(.primary)
-            //Text(note.body)
-                //.font(.subheadline)
-                //.foregroundColor(.primary)
 
+            VStack(alignment: .leading, spacing: 4) {
+                Text(note.text)
+                    .font(.headline)
+                    .foregroundColor(.primary)
+            }
+            
             if let mediaURL = note.mediaURL, !mediaURL.isEmpty, let url = URL(string: mediaURL) {
                 ZStack {
                     if isLoading {
@@ -331,46 +340,42 @@ struct SharedNoteRow: View {
                         Image(uiImage: image)
                             .resizable()
                             .aspectRatio(contentMode: .fill)
-                            .frame(maxHeight: 200)
+                            .frame(maxWidth: .infinity, maxHeight: 200)
                             .clipped()
                             .cornerRadius(10)
+                            .contentShape(Rectangle())
                             .onTapGesture {
-                                isImageFullScreen = true
+                                isImageFullScreen = true // Open the full-screen image view on image tap
                             }
                     }
                 }
+                .frame(maxWidth: .infinity, maxHeight: 200)
                 .onAppear {
                     loadImage(from: url)
                 }
                 .sheet(isPresented: $isImageFullScreen) {
-                    FullScreenImageViewSocial(image: image)
+                    if let image = image {
+                        FullScreenImageViewSocial(image: image) // Show full-screen image view
+                    }
                 }
             }
 
-            // Use NavigationLink directly around the button
+            // Make the whole note tappable to navigate to the full note view
             NavigationLink(destination: FullNoteView(note: note)) {
-                Text("Read")
-                    .font(.headline)
-                    .foregroundColor(.primary)
-                    .padding()
-                    .background(Color(.systemGray6))
-                    .cornerRadius(15)
-                    .shadow(radius: 1)
+                EmptyView() // Invisible view to trigger navigation when tapped anywhere on the note except the image
             }
-            .padding(.vertical, 4)
-            .background(Color.clear)  // Make sure it doesn't visually conflict
+            .opacity(0)  // Keep it invisible, but still tappable
         }
+        .padding(.vertical, 8)
     }
 
     private func loadImage(from url: URL) {
-        // First, try to load from cache
         if let cachedImage = ImageCache.shared.getImage(for: url) {
             image = cachedImage
             isLoading = false
             return
         }
 
-        // If not cached, download the image
         isLoading = true
         URLSession.shared.dataTask(with: url) { data, _, _ in
             guard let data = data, let downloadedImage = UIImage(data: data) else {
@@ -381,7 +386,6 @@ struct SharedNoteRow: View {
             }
 
             DispatchQueue.main.async {
-                // Save image to cache
                 ImageCache.shared.saveImage(downloadedImage, for: url)
                 self.image = downloadedImage
                 self.isLoading = false
@@ -389,6 +393,11 @@ struct SharedNoteRow: View {
         }.resume()
     }
 }
+
+
+
+
+
 
 
 // Full-screen image view

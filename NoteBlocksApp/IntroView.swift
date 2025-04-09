@@ -23,6 +23,8 @@ struct IntroView: View {
 
     @ObservedObject var networkMonitor = NetworkMonitor() // Use your existing NetworkMonitor
     @Environment(\.colorScheme) var colorScheme  // Detect light/dark mode
+    
+    let fetchUserData: () -> Void
 
     var body: some View {
         NavigationStack {
@@ -97,7 +99,7 @@ struct IntroView: View {
             }
             .padding()
             .navigationDestination(isPresented: $showNotes) {
-                ContentView(username: loggedInUser ?? "Guest", onLogout: {})
+                ContentView(username: loggedInUser ?? "Guest", onLogout: {}, fetchUserData: fetchUserData )
             }
             .alert(isPresented: $showNoConnectionAlert) {
                 Alert(title: Text("No Internet Connection"),

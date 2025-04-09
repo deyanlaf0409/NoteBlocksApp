@@ -126,36 +126,32 @@ struct EditNoteView: View {
 
                 HStack {
                     Button(action: { showingMediaSheet.toggle() }) {
-                        VStack {
-                            if editedMedia.isEmpty {
+                        if let firstImagePath = editedMedia.first,
+                           let uiImage = UIImage(contentsOfFile: firstImagePath) {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 110, height: 80)
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
+                                .contentShape(RoundedRectangle(cornerRadius: 10)) // Make sure tap area matches shape
+                        } else {
+                            VStack {
                                 Image("imagemenu")
                                     .resizable()
                                     .scaledToFit()
-                                    .frame(width: 24, height: 24) // Base size
-                                    .scaleEffect(1.4) // Increase size without affecting layout
+                                    .frame(width: 24, height: 24)
+                                    .scaleEffect(1.4)
                                 
                                 Text("Image")
                                     .font(.footnote)
                                     .foregroundColor(.primary)
-                                
-                            } else {
-                                
-                                HStack {
-                                    ForEach(0..<editedMedia.count, id: \.self) { index in
-                                        // Load image from file path
-                                        if let uiImage = UIImage(contentsOfFile: editedMedia[index]) {
-                                            Image(uiImage: uiImage)
-                                                .resizable()
-                                                .scaledToFit()
-                                                .frame(width: 50, height: 50) // Base size
-                                                .scaleEffect(1.4) // Increase size without affecting layout
-                                        }
-                                    }
-                                }
                             }
+                            .frame(maxWidth: .infinity, minHeight: 80)
+                            .background(RoundedRectangle(cornerRadius: 10).fill(Color(.systemGray6)))
                         }
                     }
-                    .buttonStyle(CustomButtonStyle())
+                    .buttonStyle(PlainButtonStyle()) // <=== Important! No custom style. Button *is* the image.
+
                     
                     Button(action: {
                         if username == "Guest" { // Replace with actual authentication logic
@@ -265,7 +261,7 @@ struct EditNoteView: View {
             }
 
         }
-        .navigationTitle("View Card")
+        .navigationTitle("Edit Card")
         .onAppear {
             if note.locked {
                 // Ask for authentication if the note is locked

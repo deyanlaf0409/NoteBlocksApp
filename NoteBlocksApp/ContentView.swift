@@ -52,6 +52,8 @@ struct ContentView: View {
             UserDefaults.standard.synchronize()
         }
     }
+    
+    let fetchUserData: () -> Void
 
     enum SearchCriteria {
         case text, date
@@ -442,6 +444,9 @@ struct ContentView: View {
                     }
                 }
                 .onDelete(perform: noteStore.deleteNote)
+            }
+            .refreshable {
+                fetchUserData()
             }
         }
     }

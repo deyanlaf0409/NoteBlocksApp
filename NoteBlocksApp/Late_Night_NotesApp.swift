@@ -17,7 +17,9 @@ struct Late_Night_NotesApp: App {
     var body: some Scene {
         WindowGroup {
             if showNotes {
-                ContentView(username: loggedInUser ?? "Guest", onLogout: resetToInitialState)
+                ContentView(username: loggedInUser ?? "Guest",
+                            onLogout: resetToInitialState,
+                            fetchUserData: fetchUserData)
                     .environmentObject(noteStore)
                     .environmentObject(networkMonitor)
                     .onOpenURL { url in
@@ -25,14 +27,22 @@ struct Late_Night_NotesApp: App {
                     }
                     .onAppear {
                         fetchUserData()
-                        startPeriodicFetch()
-                        noteStore.fetchSharedNotes()
+                        //startPeriodicFetch()
+                        if noteStore.sharedNotes.isEmpty {
+                                noteStore.fetchSharedNotes()
+                            }
                     }
+                    .onChange(of: noteStore.sharedNotes) { oldValue, _ in
+                                            // Trigger periodic fetch to update user notes
+                                            fetchUserData()
+                                        }
+                
             } else {
                 IntroView(
                     loggedInUser: $loggedInUser,
                     showNotes: $showNotes,
-                    showSafari: $showSafari
+                    showSafari: $showSafari,
+                    fetchUserData: fetchUserData
                 )
                 .onOpenURL { url in
                     handleDeepLink(url: url)
@@ -42,12 +52,13 @@ struct Late_Night_NotesApp: App {
         }
     }
     
-    
+    /*
     private func startPeriodicFetch() {
-            Timer.scheduledTimer(withTimeInterval: 15, repeats: true) { _ in  // Every 5 minutes
+            Timer.scheduledTimer(withTimeInterval: 1500, repeats: true) { _ in  // Every 5 minutes
                 fetchUserData()
             }
         }
+     */
 
     private func handleDeepLink(url: URL) {
         guard url.scheme == "latenightnotes", let host = url.host else {
@@ -312,7 +323,7 @@ struct Late_Night_NotesApp: App {
     
 
 
-    private func fetchUserData() {
+    public func fetchUserData() {
         guard let userId = UserDefaults.standard.value(forKey: "userId") as? Int else {
             print("No logged-in user ID found. Skipping data fetch.")
             return
