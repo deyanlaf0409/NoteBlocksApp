@@ -155,33 +155,36 @@ struct ProfileView: View {
     }
     
     func generateQRCodeLocally() {
-        let filter = CIFilter.qrCodeGenerator()
-        let data = Data(username.utf8) // Encode the username instead of user ID
-        filter.setValue(data, forKey: "inputMessage")
-        filter.setValue("H", forKey: "inputCorrectionLevel") // High Error Correction
+        DispatchQueue.global(qos: .userInitiated).async { // Offload QR code generation to background thread
+            let filter = CIFilter.qrCodeGenerator()
+            let data = Data(username.utf8) // Encode the username instead of user ID
+            filter.setValue(data, forKey: "inputMessage")
+            filter.setValue("H", forKey: "inputCorrectionLevel") // High Error Correction
 
-        guard let outputImage = filter.outputImage else {
-            DispatchQueue.main.async {
-                self.errorMessage = "Failed to create QR code"
+            guard let outputImage = filter.outputImage else {
+                DispatchQueue.main.async {
+                    self.errorMessage = "Failed to create QR code"
+                }
+                return
             }
-            return
-        }
 
-        let transform = CGAffineTransform(scaleX: 10, y: 10) // Scale QR code
-        let scaledQR = outputImage.transformed(by: transform)
+            let transform = CGAffineTransform(scaleX: 10, y: 10) // Scale QR code
+            let scaledQR = outputImage.transformed(by: transform)
 
-        let context = CIContext()
-        if let cgImage = context.createCGImage(scaledQR, from: scaledQR.extent) {
-            let uiImage = UIImage(cgImage: cgImage)
-            DispatchQueue.main.async {
-                self.qrCodeImage = uiImage
-            }
-        } else {
-            DispatchQueue.main.async {
-                self.errorMessage = "Failed to generate QR code"
+            let context = CIContext()
+            if let cgImage = context.createCGImage(scaledQR, from: scaledQR.extent) {
+                let uiImage = UIImage(cgImage: cgImage)
+                DispatchQueue.main.async {
+                    self.qrCodeImage = uiImage // Update UI on the main thread
+                }
+            } else {
+                DispatchQueue.main.async {
+                    self.errorMessage = "Failed to generate QR code"
+                }
             }
         }
     }
+
 
 }
 

@@ -331,6 +331,15 @@ struct Late_Night_NotesApp: App {
             DispatchQueue.main.async {
                 switch result {
                 case .success(let json):
+                    if let userData = json["user"] as? [String: Any],
+                       let username = userData["username"] as? String {
+                        // Save to UserDefaults
+                        UserDefaults.standard.set(username, forKey: "loggedInUser")
+                        
+                        // Update the @State variable manually!
+                        self.loggedInUser = username
+                    }
+
                     if let notesArray = json["notes"] as? [[String: Any]] {
                         var fetchedNotes: [Note] = []
                         let dispatchGroup = DispatchGroup()

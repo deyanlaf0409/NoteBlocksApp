@@ -52,6 +52,7 @@ struct SocialView: View {
                 Spacer()
             }
             .navigationTitle("Network")
+            .navigationBarTitleDisplayMode(.inline)
             .onAppear {
                 fetchNetworkData()
             }
@@ -126,7 +127,7 @@ struct FriendRequestsView: View {
     @State private var acceptingRequest: String? = nil
 
     var body: some View {
-        VStack {
+        VStack(spacing: 0) {
             if friendRequests.isEmpty {
                 VStack(spacing: 0) { // Set spacing to 0 to remove extra space
                     Image("requests") // Image should render here
@@ -134,7 +135,7 @@ struct FriendRequestsView: View {
                         .scaledToFit()
                         .frame(width: 250, height: 250)
                         .opacity(0.9)
-                        .padding(.top, 1) // Adjust size
+                        .padding(.top, 0) // Adjust size
                     
                     Text("No pending friend requests")
                         .foregroundColor(.gray)
@@ -200,7 +201,7 @@ struct FriendSearchView: View {
     @EnvironmentObject var noteStore: NoteStore  // <-- Access NoteStore from the environment
 
     var body: some View {
-        VStack {
+        VStack(spacing: 0) {
 
             HStack {
                 TextField("Enter username", text: $searchText)
@@ -230,6 +231,7 @@ struct FriendSearchView: View {
                 }
             }
             .padding(.horizontal)
+            .padding(.top, 0)
 
  
 
@@ -321,14 +323,14 @@ struct SharedNoteRow: View {
     @State private var isImageFullScreen = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 4) { // slightly increased spacing here for better control
             HStack {
                 Text(note.username)
                     .foregroundColor(.secondary)
                 Spacer()
             }
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(note.text)
                     .font(.headline)
                     .foregroundColor(.primary)
@@ -352,28 +354,28 @@ struct SharedNoteRow: View {
                             .cornerRadius(10)
                             .contentShape(Rectangle())
                             .onTapGesture {
-                                isImageFullScreen = true // Open the full-screen image view on image tap
+                                isImageFullScreen = true
                             }
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: 200)
+                .padding(.bottom, 0) // <-- reduced bottom padding under image
                 .onAppear {
                     loadImage(from: url)
                 }
                 .sheet(isPresented: $isImageFullScreen) {
                     if let image = image {
-                        FullScreenImageViewSocial(image: image) // Show full-screen image view
+                        FullScreenImageViewSocial(image: image)
                     }
                 }
             }
 
-            // Invisible NavigationLink to trigger navigation when tapping anywhere on the note
             NavigationLink(value: note) {
-                EmptyView() // Invisible view to trigger navigation when tapped anywhere on the note except the image
+                EmptyView()
             }
-            .opacity(0)  // Keep it invisible, but still tappable
+            .opacity(0)
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, 0) // <-- tighter vertical padding
     }
 
     private func loadImage(from url: URL) {
@@ -400,6 +402,7 @@ struct SharedNoteRow: View {
         }.resume()
     }
 }
+
 
 
 
