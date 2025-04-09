@@ -95,6 +95,10 @@ struct ContentView: View {
                     .onAppear {
                         randomImageIndex = Int.random(in: 0..<7)
                         
+                        noteStore.notes.sort {
+                                $0.dateModified > $1.dateModified  // Sorting by dateModified in descending order
+                            }
+                        
                         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
                                         if isDarkMode {
                                             windowScene.windows.first?.overrideUserInterfaceStyle = .dark

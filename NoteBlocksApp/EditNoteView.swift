@@ -34,7 +34,7 @@ struct EditNoteView: View {
                 Image(systemName: "pencil")
                     .foregroundColor(.gray)
                 
-                TextField("Rename block", text: $editedText)
+                TextField("Rename card", text: $editedText)
                     .foregroundColor(.primary)
                     .padding(5)
             }

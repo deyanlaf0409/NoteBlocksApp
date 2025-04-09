@@ -34,28 +34,34 @@ struct SocialView: View {
     @State private var showAlert: Bool = false    // Shared alert flag
 
     var body: some View {
-        VStack {
-            Picker("Options", selection: $selectedTab) {
-                Text("Search").tag(0)
-                Text(pendingRequestsCount > 0 ? "Requests (\(pendingRequestsCount))" : "Requests").tag(1)
-            }
-            .pickerStyle(SegmentedPickerStyle())
-            .padding()
+        NavigationStack {
+            VStack {
+                Picker("Options", selection: $selectedTab) {
+                    Text("Search").tag(0)
+                    Text(pendingRequestsCount > 0 ? "Requests (\(pendingRequestsCount))" : "Requests").tag(1)
+                }
+                .pickerStyle(SegmentedPickerStyle())
+                .padding()
 
-            if selectedTab == 0 {
-                FriendSearchView(friendRequests: $friendRequests, showAlert: $showAlert, alertMessage: $alertMessage)  // Pass bindings
-            } else {
-                FriendRequestsView(friendRequests: $friendRequests, onUpdate: fetchNetworkData, showAlert: $showAlert, alertMessage: $alertMessage)
-            }
+                if selectedTab == 0 {
+                    FriendSearchView(friendRequests: $friendRequests, showAlert: $showAlert, alertMessage: $alertMessage)  // Pass bindings
+                } else {
+                    FriendRequestsView(friendRequests: $friendRequests, onUpdate: fetchNetworkData, showAlert: $showAlert, alertMessage: $alertMessage)
+                }
 
-            Spacer()
-        }
-        .navigationTitle("Network")
-        .onAppear {
-            fetchNetworkData()
-        }
-        .alert(isPresented: $showAlert) {
-            Alert(title: Text("Notification"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
+                Spacer()
+            }
+            .navigationTitle("Network")
+            .onAppear {
+                fetchNetworkData()
+            }
+            .alert(isPresented: $showAlert) {
+                Alert(title: Text("Notification"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
+            }
+            // Move the navigation destination here to ensure it's always available
+            .navigationDestination(for: SharedNote.self) { note in
+                FullNoteView(note: note)
+            }
         }
     }
 
@@ -104,6 +110,7 @@ struct SocialView: View {
         self.showAlert = true
     }
 }
+
 
 
 
@@ -360,8 +367,8 @@ struct SharedNoteRow: View {
                 }
             }
 
-            // Make the whole note tappable to navigate to the full note view
-            NavigationLink(destination: FullNoteView(note: note)) {
+            // Invisible NavigationLink to trigger navigation when tapping anywhere on the note
+            NavigationLink(value: note) {
                 EmptyView() // Invisible view to trigger navigation when tapped anywhere on the note except the image
             }
             .opacity(0)  // Keep it invisible, but still tappable
@@ -399,7 +406,6 @@ struct SharedNoteRow: View {
 
 
 
-
 // Full-screen image view
 struct FullScreenImageViewSocial: View {
     var image: UIImage?
@@ -427,6 +433,7 @@ struct FullNoteView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
                 Text(note.username)
+                    .foregroundColor(.secondary)
                     .font(.subheadline)
                     .padding(.bottom, 10)
                     .frame(maxWidth: .infinity, alignment: .leading) // Align to the left

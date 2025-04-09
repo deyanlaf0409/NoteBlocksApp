@@ -32,10 +32,6 @@ struct Late_Night_NotesApp: App {
                                 noteStore.fetchSharedNotes()
                             }
                     }
-                    .onChange(of: noteStore.sharedNotes) { oldValue, _ in
-                                            // Trigger periodic fetch to update user notes
-                                            fetchUserData()
-                                        }
                 
             } else {
                 IntroView(
