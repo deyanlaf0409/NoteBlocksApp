@@ -56,9 +56,10 @@ struct NotesInFolderView: View {
                                 if let firstImagePath = note.media.first, let uiImage = UIImage(contentsOfFile: firstImagePath) {
                                     Image(uiImage: uiImage)
                                         .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 65, height: 65)
-                                        .clipShape(RoundedRectangle(cornerRadius: 5))
+                                        .scaledToFill()
+                                        .frame(width: 100, height: 100) // Full height and fixed width
+                                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous)) // Round only left corners
+                                        .clipped() // Prevent overflow
                                         .blur(radius: note.locked ? 10 : 0)
                                         .padding(.trailing, 8)
                                         .onTapGesture {
@@ -77,7 +78,7 @@ struct NotesInFolderView: View {
                                     Text(note.text)
                                         .font(.headline)
                                     
-                                    Text("Last Modified: \(note.dateModified.formatted())")
+                                    Text("Added: \(note.dateCreated.formatted())")
                                         .font(.subheadline)
                                         .foregroundColor(.gray)
                                 }

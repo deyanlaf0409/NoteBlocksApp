@@ -458,55 +458,95 @@ struct ContentView: View {
 
     private func noteRow(note: Note) -> some View {
         ZStack {
-            // NavigationLink that directly passes a binding to the note
-            NavigationLink(destination: EditNoteView(note: $noteStore.notes[noteStore.notes.firstIndex(where: { $0.id == note.id })!], username: username)) {
+            NavigationLink(destination: EditNoteView(
+                note: $noteStore.notes[noteStore.notes.firstIndex(where: { $0.id == note.id })!],
+                username: username
+            )) {
                 EmptyView()
             }
             .opacity(0)
 
-
-            
-            HStack {
+            HStack(spacing: 0) { // No spacing between image and text
                 noteInfo(note: note)
                 noteIcons(note: note)
             }
-            .padding(.vertical, 8)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(height: 100) // Set row height to match the image
+            .padding(.leading, 0) // No padding on the left side
         }
-        .contentShape(Rectangle())  // Make the whole row tappable
+        .contentShape(Rectangle())
     }
 
 
+
+
+    
+    struct RoundedCorner: Shape {
+        var radius: CGFloat
+        var corners: UIRectCorner
+
+        func path(in rect: CGRect) -> Path {
+            let path = UIBezierPath(
+                roundedRect: rect,
+                byRoundingCorners: corners,
+                cornerRadii: CGSize(width: radius, height: radius)
+            )
+            return Path(path.cgPath)
+        }
+    }
+
+
+
+
+
+
+
+
     private func noteInfo(note: Note) -> some View {
-        HStack {
-            // Show image if note has media
+        HStack(spacing: 0) { // No spacing
+            // IMAGE part: Show image only if available
             if let firstImagePath = note.media.first, let uiImage = UIImage(contentsOfFile: firstImagePath) {
                 Image(uiImage: uiImage)
                     .resizable()
-                    .scaledToFit()
-                    .frame(width: 65, height: 65)
-                    .clipShape(RoundedRectangle(cornerRadius: 5))
-                    .padding(.trailing, 8)
+                    .scaledToFill()
+                    .frame(width: 100, height: 100) // Full height and fixed width
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous)) // Round only left corners
+                    .clipped() // Prevent overflow
                     .blur(radius: note.locked ? 10 : 0)
                     .onTapGesture {
-                        if !note.locked { // Optional: Only allow opening if unlocked
+                        if !note.locked {
                             selectedImage = uiImage
                             showFullScreenImage = true
                         }
                     }
+            } else {
+                // If no image, we simply skip rendering the image part.
+                EmptyView() // No placeholder image box
             }
 
-
-            VStack(alignment: .leading) {
+            // INFO part (text + created date) — aligned to the right of the image
+            VStack(alignment: .leading, spacing: 6) {
                 Text(note.text)
                     .font(.headline)
+                    .foregroundColor(.primary)
+                    .lineLimit(2)
 
-                Text("Created: \(formattedDate(note.dateCreated))")
+                Text("Added: \(formattedDate(note.dateCreated))")
                     .font(.subheadline)
                     .foregroundColor(.gray)
             }
+            .padding(.horizontal, 12) // Padding only on the right side
+            .padding(.vertical, 8)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
+
+
+
+
+
+
+
 
 
 
