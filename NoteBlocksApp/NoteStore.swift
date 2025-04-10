@@ -494,6 +494,7 @@ class NoteStore: ObservableObject {
             "body": note.body,
             "dateCreated": formattedDateCreated,
             "dateModified": formattedDateModified,
+            "locked": note.locked
             //"folderId": note.folderID?.uuidString ?? "",
             //"media": note.media // This is now an array
         ]
