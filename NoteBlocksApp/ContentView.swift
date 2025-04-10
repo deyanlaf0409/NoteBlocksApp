@@ -525,13 +525,13 @@ struct ContentView: View {
             }
 
             // INFO part (text + created date) — aligned to the right of the image
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text(note.text)
                     .font(.headline)
                     .foregroundColor(.primary)
                     .lineLimit(2)
 
-                Text("Added: \(formattedDate(note.dateCreated))")
+                Text("\(formattedDate(note.dateCreated))")
                     .font(.subheadline)
                     .foregroundColor(.gray)
             }

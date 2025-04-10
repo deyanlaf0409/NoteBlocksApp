@@ -78,7 +78,7 @@ struct NotesInFolderView: View {
                                     Text(note.text)
                                         .font(.headline)
                                     
-                                    Text("Added: \(note.dateCreated.formatted())")
+                                    Text("\(note.dateCreated.formatted())")
                                         .font(.subheadline)
                                         .foregroundColor(.gray)
                                 }
