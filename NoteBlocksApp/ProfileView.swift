@@ -33,6 +33,22 @@ struct ProfileView: View {
                     .fontWeight(.bold)
                     .padding(.top, 5)
                     .padding(.bottom, 5)
+                
+                Button(action: {
+                    if let url = URL(string: "http://192.168.0.222/project/profile/profilePage/profile-page.php") {
+                        UIApplication.shared.open(url)
+                    }
+                }) {
+                    Text("Edit Profile")
+                        .bold()
+                        .padding()
+                        .frame(maxWidth: 150)
+                        .background(Color.black)
+                        .foregroundColor(.white)
+                        .cornerRadius(15)
+                }
+                .padding(.bottom, 10)
+
 
                 
                 if let qrCodeImage = qrCodeImage {
