@@ -19,9 +19,20 @@ struct FriendsView: View {
     @State private var isLoading: Bool = false
     @State private var friendToRemove: Friend? = nil
     @State private var showRemoveConfirmation: Bool = false
-    @State private var noFriendsMessage: String? = nil  // To show the "No friends" message
+    @State private var noFriendsMessage: String? = nil
+    @State private var searchText: String = ""
+
 
     let userId = UserDefaults.standard.string(forKey: "userId")
+    
+    var filteredFriends: [Friend] {
+        if searchText.isEmpty {
+            return friends
+        } else {
+            return friends.filter { $0.username.lowercased().contains(searchText.lowercased()) }
+        }
+    }
+
     
     var body: some View {
         VStack {
@@ -45,14 +56,28 @@ struct FriendsView: View {
                     .foregroundColor(.gray)
                     .padding()
             } else {
-                List(friends) { friend in
+                
+                HStack {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundColor(.gray)
+                    
+                    TextField("Search friends...", text: $searchText)
+                        .foregroundColor(.primary)
+                        .padding(5)
+                }
+                .padding(3)
+                .background(RoundedRectangle(cornerRadius: 25).fill(Color(.systemGray6)))
+                .padding(.horizontal, 10)
+                .padding(.top, 1)
+
+                
+                List(filteredFriends) { friend in
                     HStack {
                         Image(systemName: "person.fill")
                         Text(friend.username)
                         
                         Spacer()
                         
-                        // Remove button next to each friend
                         Button(action: {
                             friendToRemove = friend
                             showRemoveConfirmation = true

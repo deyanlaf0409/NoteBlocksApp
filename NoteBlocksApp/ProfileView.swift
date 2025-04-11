@@ -39,7 +39,7 @@ struct ProfileView: View {
                         UIApplication.shared.open(url)
                     }
                 }) {
-                    Text("Edit Profile")
+                    Text("⚙️ Edit Profile")
                         .bold()
                         .padding()
                         .frame(maxWidth: 150)
