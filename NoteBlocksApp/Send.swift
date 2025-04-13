@@ -17,7 +17,19 @@ struct FriendsList: View {
     
     @EnvironmentObject var noteStore: NoteStore
     
-    @State private var selectedFriends: Set<String> = []  // Track selected friends
+    @State private var selectedFriends: Set<String> = []
+    @State private var searchText: String = ""
+    
+    
+    
+    var filteredFriends: [Friend] {
+        if searchText.isEmpty {
+            return friends
+        } else {
+            return friends.filter { $0.username.lowercased().contains(searchText.lowercased()) }
+        }
+    }
+    
     
     var body: some View {
         ZStack {
@@ -37,23 +49,37 @@ struct FriendsList: View {
                         .padding()
                     Spacer()
                 } else {
-                    List(friends) { friend in
-                        HStack {
-                            Image(systemName: "person.fill")
-                            Text(friend.username)
-                            Spacer()
-                            
-                            // Selection indicator
-                            if selectedFriends.contains(friend.id) {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundColor(.blue)
-                            }
-                        }
-                        .contentShape(Rectangle()) // Expand tap area
-                        .onTapGesture {
-                            toggleSelection(for: friend)
-                        }
+                    
+                    HStack {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundColor(.gray)
+                        
+                        TextField("Search friends...", text: $searchText)
+                            .foregroundColor(.primary)
+                            .padding(5)
                     }
+                    .padding(3)
+                    .background(RoundedRectangle(cornerRadius: 25).fill(Color(.systemGray6)))
+                    .padding(.horizontal, 10)
+                    .padding(.top, 10)
+                    
+                    List(filteredFriends) { friend in
+                                                HStack {
+                                                    Image(systemName: "person.fill")
+                                                    Text(friend.username)
+                                                    Spacer()
+                                                    
+                                                    if selectedFriends.contains(friend.id) {
+                                                        Image(systemName: "checkmark.circle.fill")
+                                                            .foregroundColor(.blue)
+                                                    }
+                                                }
+                                                .contentShape(Rectangle())
+                                                .onTapGesture {
+                                                    toggleSelection(for: friend)
+                                                }
+                                            }
+                                            .listStyle(PlainListStyle())
                 }
             }
             .navigationTitle("Friends")

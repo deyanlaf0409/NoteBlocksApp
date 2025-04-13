@@ -67,7 +67,7 @@ struct Late_Night_NotesApp: App {
                status == "success",
                let username = queryItems.first(where: { $0.name == "username" })?.value,
                let userIdString = queryItems.first(where: { $0.name == "user_id" })?.value,
-               let userId = Int(userIdString),
+               let userId = UUID(uuidString: userIdString),
                let notesString = queryItems.first(where: { $0.name == "notes" })?.value,
                let foldersString = queryItems.first(where: { $0.name == "folders" })?.value {
 
@@ -200,7 +200,8 @@ struct Late_Night_NotesApp: App {
                             showNotes = true
                             UserDefaults.standard.set(true, forKey: "isLoggedIn")
                             UserDefaults.standard.set(username, forKey: "loggedInUser")
-                            UserDefaults.standard.set(userId, forKey: "userId")
+                            UserDefaults.standard.set(userId.uuidString, forKey: "userId")
+
 
                             if let encodedNotes = try? JSONEncoder().encode(mergedNotes) {
                                 UserDefaults.standard.set(encodedNotes, forKey: "savedNotes")
@@ -320,14 +321,16 @@ struct Late_Night_NotesApp: App {
 
 
     public func fetchUserData() {
-        guard let userId = UserDefaults.standard.value(forKey: "userId") as? Int else {
+        guard let userIdString = UserDefaults.standard.string(forKey: "userId"),
+              let userId = UUID(uuidString: userIdString) else {
             print("No logged-in user ID found. Skipping data fetch.")
             return
         }
 
+
         print("Fetching data for logged-in user: \(userId)")
 
-        NetworkService.shared.fetchNotes(userId: userId) { result in
+        NetworkService.shared.fetchNotes(userId: userId.uuidString) { result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(let json):
@@ -424,7 +427,7 @@ struct Late_Night_NotesApp: App {
 
                 case .failure(let error):
                     print("Failed to fetch notes from server: \(error.localizedDescription)")
-                    //esetToInitialState()
+                    resetToInitialState()
                 }
             }
         }

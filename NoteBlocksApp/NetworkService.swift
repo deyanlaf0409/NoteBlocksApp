@@ -14,7 +14,7 @@ struct NetworkService {
 
     private init() {} // Prevent direct initialization
 
-    func fetchNotes(userId: Int, completion: @escaping (Result<[String: Any], Error>) -> Void) {
+    func fetchNotes(userId: String, completion: @escaping (Result<[String: Any], Error>) -> Void) {
         guard let url = URL(string: "http://192.168.0.222/project/API/fetch.php") else {
             completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
             return
