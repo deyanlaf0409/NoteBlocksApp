@@ -334,6 +334,18 @@ struct Late_Night_NotesApp: App {
             DispatchQueue.main.async {
                 switch result {
                 case .success(let json):
+                    
+                    if let status = json["status"] as? String, status == "failure" {
+                                    if let message = json["message"] as? String, message == "User not found" {
+                                        print("User not found. Resetting app.")
+                                        resetToInitialState()
+                                        return
+                                    } else {
+                                        print("Server returned failure: \(json["message"] ?? "Unknown error")")
+                                        return
+                                    }
+                                }
+                    
                     if let userData = json["user"] as? [String: Any],
                        let username = userData["username"] as? String {
                         // Save to UserDefaults
