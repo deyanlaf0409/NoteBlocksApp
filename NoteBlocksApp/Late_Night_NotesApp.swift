@@ -424,6 +424,20 @@ struct Late_Night_NotesApp: App {
 
                         // Wait for all image downloads to complete
                         dispatchGroup.notify(queue: .main) {
+                            // Step 1: Load existing notes from UserDefaults (if any)
+                            var existingNotes: [Note] = []
+                            if let existingNotesData = UserDefaults.standard.data(forKey: "savedNotes") {
+                                existingNotes = (try? JSONDecoder().decode([Note].self, from: existingNotesData)) ?? []
+                            }
+
+                            // Step 2: Merge reminderDate from existing notes
+                            for i in 0..<fetchedNotes.count {
+                                if let match = existingNotes.first(where: { $0.id == fetchedNotes[i].id }) {
+                                    fetchedNotes[i].reminderDate = match.reminderDate
+                                }
+                            }
+
+                            // Step 3: Save and update the app state
                             noteStore.notes = fetchedNotes
                             print("Fetched \(fetchedNotes.count) notes from server.")
 
@@ -432,6 +446,7 @@ struct Late_Night_NotesApp: App {
                                 print("Saved notes to UserDefaults")
                             }
                         }
+
                     } else {
                         print("Error: No notes found in the response.")
                         //resetToInitialState()

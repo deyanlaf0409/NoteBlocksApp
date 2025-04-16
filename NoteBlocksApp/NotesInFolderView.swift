@@ -9,6 +9,7 @@ import SwiftUI
 
 struct NotesInFolderView: View {
     @EnvironmentObject var noteStore: NoteStore
+    @Environment(\.dismiss) private var dismiss
     @State private var newFolderName = ""
     @State private var loggedInUser: String? = UserDefaults.standard.string(forKey: "loggedInUser")
     @State private var showFullScreenImage = false
@@ -93,9 +94,37 @@ struct NotesInFolderView: View {
                 }
             }
 
-            .padding(.top, 20) // Add space between the folder name and the notes list
+            .padding(.top, 20)
         }
         .navigationTitle("") // Empty title, custom name is used in the navigation bar
+        .navigationBarBackButtonHidden(true)
+        
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    dismiss()
+                }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                        Text("Back")
+                    }
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .padding(.vertical, 3.5)
+                    .padding(.horizontal, 12)
+                    .frame(maxWidth: 150)
+                    .background(
+                        LinearGradient(
+                            gradient: Gradient(colors: [Color.black, Color.black]),
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .foregroundColor(.gray)
+                    .cornerRadius(15)
+                    .shadow(color: Color.black.opacity(0.5), radius: 2, x: 1, y: 1)
+                }
+            }
+        }
         .onAppear {
             newFolderName = folder.name
         }

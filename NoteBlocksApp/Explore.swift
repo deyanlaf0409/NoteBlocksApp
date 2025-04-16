@@ -49,6 +49,7 @@ struct GuestLoginPromptView: View {
             )
             .foregroundColor(.white)
             .cornerRadius(15)
+            .shadow(color: Color.black.opacity(0.5), radius: 2, x: 1, y: 1)
 
             Spacer()
         }

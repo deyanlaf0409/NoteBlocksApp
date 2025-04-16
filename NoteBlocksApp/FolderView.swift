@@ -9,6 +9,7 @@ import SwiftUI
 
 struct FolderView: View {
     @EnvironmentObject var noteStore: NoteStore
+    @Environment(\.dismiss) private var dismiss
     @State private var newFolderName = ""
     @State private var folderListUpdated = false
 
@@ -52,7 +53,8 @@ struct FolderView: View {
                             .padding(10) // Reduced padding
                             .background(Color.black)
                             .foregroundColor(.white)
-                            .cornerRadius(15) // Slightly smaller corner radius for a compact look
+                            .cornerRadius(15)
+                            .shadow(color: Color.black.opacity(0.5), radius: 2, x: 1, y: 1)
                     }
 
                         .padding(.top, 1) // Adjust the padding to align with the text field
@@ -93,6 +95,35 @@ struct FolderView: View {
             }
         }
         .navigationTitle("Manage Folders")
+        .navigationBarBackButtonHidden(true)
+        
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    dismiss()
+                }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                        Text("Home")
+                    }
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .padding(.vertical, 3.5)
+                    .padding(.horizontal, 12)
+                    .frame(maxWidth: 150)
+                    .background(
+                        LinearGradient(
+                            gradient: Gradient(colors: [Color.primary, Color.primary]),
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .foregroundColor(.gray)
+                    .cornerRadius(15)
+                    .shadow(color: Color.black.opacity(0.5), radius: 2, x: 1, y: 1)
+                }
+            }
+        }
+
     }
 
     private func deleteFolder(at offsets: IndexSet) {

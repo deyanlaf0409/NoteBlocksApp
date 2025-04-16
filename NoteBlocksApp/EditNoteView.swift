@@ -10,6 +10,7 @@ struct EditNoteView: View {
     @State private var friends: [Friend] = []
     
     @Environment(\.presentationMode) var presentationMode
+    @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var noteStore: NoteStore
 
     @State private var editedText: String = ""
@@ -262,6 +263,36 @@ struct EditNoteView: View {
 
         }
         .navigationTitle("Edit Card")
+        .navigationBarBackButtonHidden(true)
+        
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    dismiss()
+                }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                        Text("Home")
+                    }
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .padding(.vertical, 3.5)
+                    .padding(.horizontal, 12)
+                    .frame(maxWidth: 150)
+                    .background(
+                        LinearGradient(
+                            gradient: Gradient(colors: [Color.primary, Color.primary]),
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .foregroundColor(.gray)
+                    .cornerRadius(15)
+                    .shadow(color: Color.black.opacity(0.5), radius: 2, x: 1, y: 1)
+                }
+            }
+        }
+
+        
         .onAppear {
             if note.locked {
                 // Ask for authentication if the note is locked
@@ -456,6 +487,7 @@ struct ReminderPicker: View {
                 )
                 .foregroundColor(.white)
                 .cornerRadius(15)
+                .shadow(color: Color.black.opacity(0.5), radius: 2, x: 1, y: 1)
                 .offset(y: -150)
             }
             .navigationTitle("Select Date & Time")

@@ -185,13 +185,29 @@ struct ContentView: View {
 
     private var userHeader: some View {
         HStack {
-            Text("Logged in as \(username)")
-                .font(.system(size: 20))
+            
+            Text("Logged as")
                 .foregroundColor(.gray)
-                .padding()
+                .font(.system(size: 20))
+
+            if username == "Guest" {
+                Text(username)
+                    .foregroundColor(.gray)
+                    .font(.system(size: 20))
+            } else {
+                Text(username)
+                    .foregroundColor(.green)
+                    .font(.system(size: 20, weight: .bold))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.green.opacity(0.2))
+                    .cornerRadius(8)
+            }
 
             Spacer()
         }
+
+
         .padding()
     }
 
@@ -366,6 +382,7 @@ struct ContentView: View {
                 Image(systemName: "circle.fill")
                     .font(.system(size: 30))
                     .foregroundColor(.black)
+                    .shadow(color: Color.black.opacity(0.5), radius: 2, x: 1, y: 1)
                 Image(systemName: "ellipsis")
                     .font(.system(size: 18))
                     .foregroundColor(.white)
@@ -466,16 +483,17 @@ struct ContentView: View {
             }
             .opacity(0)
 
-            HStack(spacing: 0) { // No spacing between image and text
+            HStack(spacing: 0) {
                 noteInfo(note: note)
                 noteIcons(note: note)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .frame(height: 100) // Set row height to match the image
-            .padding(.leading, 0) // No padding on the left side
+            .frame(height: note.media.first != nil ? 100 : nil) // Only force 100 if there's an image
+            .padding(.leading, 0)
         }
         .contentShape(Rectangle())
     }
+
 
 
 

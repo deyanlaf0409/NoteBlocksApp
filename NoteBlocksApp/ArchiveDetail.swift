@@ -13,6 +13,8 @@ struct NoteDetailView: View {
     @ObservedObject var noteStore: NoteStore
     @Environment(\.presentationMode) var presentationMode // This is the key for navigating back
     @State private var isAuthenticated: Bool = false
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
         VStack {
@@ -64,6 +66,7 @@ struct NoteDetailView: View {
             )
             .foregroundColor(.white)
             .cornerRadius(15)
+            .shadow(color: Color.black.opacity(0.5), radius: 2, x: 1, y: 1)
             
             // Delete Button
             Button("Delete") {
@@ -80,12 +83,42 @@ struct NoteDetailView: View {
                     endPoint: .trailing
                 )
             )
-            .foregroundColor(.white)
+            .foregroundColor(.orange)
             .cornerRadius(15)
+            .shadow(color: Color.black.opacity(0.5), radius: 2, x: 1, y: 1)
             
             Spacer()
         }
-        .navigationTitle("Note Details")
+        .navigationTitle("Card Details")
+        .navigationBarBackButtonHidden(true)
+        
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    dismiss()
+                }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                        Text("Archive")
+                    }
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .padding(.vertical, 3.5)
+                    .padding(.horizontal, 12)
+                    .frame(maxWidth: 150)
+                    .background(
+                        LinearGradient(
+                            gradient: Gradient(colors: [Color.black, Color.black]),
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .foregroundColor(.gray)
+                    .cornerRadius(15)
+                    .shadow(color: Color.black.opacity(0.5), radius: 2, x: 1, y: 1)
+                }
+            }
+        }
+
         .padding()
         .blur(radius: (note.locked && !isAuthenticated) ? 10 : 0)
         .onAppear {
