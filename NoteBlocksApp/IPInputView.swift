@@ -8,7 +8,7 @@ struct IPInputView: View {
     @State private var showSafariView = false
     @State private var isSubscribed = false
 
-    let hardcodedIPAddress = "192.168.0.222"
+    //let hardcodedIPAddress = "192.168.0.222"
 
     var body: some View {
         VStack(spacing: 0) {  // Set spacing to 0 to ensure no space between elements
@@ -117,7 +117,7 @@ struct IPInputView: View {
             UserDefaults.standard.set(newValue, forKey: "isSubscribed")
         }
         .sheet(isPresented: $showSafariView) {
-            if let url = URL(string: "http://\(hardcodedIPAddress)/project/Login/construct.php?AppRequest=true") {
+            if let url = URL(string: "https://noteblocks.net/Login/construct.php?AppRequest=true") {
                 SafariView(url: url)
             }
         }

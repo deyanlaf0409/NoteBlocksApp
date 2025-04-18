@@ -43,7 +43,7 @@ class NoteStore: ObservableObject {
     
     
     func fetchSharedNotes() {
-        guard let url = URL(string: "http://192.168.0.222/project/API/feed.php") else { return }
+        guard let url = URL(string: "https://noteblocks.net/API/feed.php") else { return }
 
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
@@ -403,7 +403,7 @@ class NoteStore: ObservableObject {
         }
 
         // URLRequest setup for image upload
-        guard let url = URL(string: "http://192.168.0.222/project/API/uploadImage.php") else {
+        guard let url = URL(string: "https://noteblocks.net/API/uploadImage.php") else {
             print("Invalid URL")
             return
         }
@@ -470,7 +470,7 @@ class NoteStore: ObservableObject {
     
     
     public func sendNoteOnServer(note: Note, userId: String, completion: @escaping (Result<Void, Error>) -> Void) {
-        guard let url = URL(string: "http://192.168.0.222/project/API/sendNote.php") else {
+        guard let url = URL(string: "https://noteblocks.net/API/sendNote.php") else {
             completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
             return
         }
@@ -543,7 +543,7 @@ class NoteStore: ObservableObject {
     //MARK: - Server Add Method
     
     public func addNoteOnServer(note: Note, userId: String, completion: @escaping (Result<Void, Error>) -> Void) {
-        guard let url = URL(string: "http://192.168.0.222/project/API/addNote.php") else {
+        guard let url = URL(string: "https://noteblocks.net/API/addNote.php") else {
             completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
             return
         }
@@ -614,7 +614,7 @@ class NoteStore: ObservableObject {
     // MARK: - Server Update Method
     
     public func updateNoteOnServer(note: Note, completion: @escaping (Result<Void, Error>) -> Void) {
-        guard let url = URL(string: "http://192.168.0.222/project/API/updateNote.php") else {
+        guard let url = URL(string: "https://noteblocks.net/API/updateNote.php") else {
             completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
             return
         }
@@ -693,7 +693,7 @@ class NoteStore: ObservableObject {
 
     // Function to remove the image before deleting the note
     private func removeImageFromServer(noteId: UUID, completion: @escaping (Result<Void, Error>) -> Void) {
-        guard let url = URL(string: "http://192.168.0.222/project/API/removeImage.php") else {
+        guard let url = URL(string: "https://noteblocks.net/API/removeImage.php") else {
             completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
             return
         }
@@ -734,7 +734,7 @@ class NoteStore: ObservableObject {
 
     // Function to delete the note after images are removed
     private func performNoteDeletion(noteId: UUID, completion: @escaping (Result<Void, Error>) -> Void) {
-        guard let url = URL(string: "http://192.168.0.222/project/API/deleteNote.php") else {
+        guard let url = URL(string: "https://noteblocks.net/API/deleteNote.php") else {
             completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
             return
         }
@@ -778,7 +778,7 @@ class NoteStore: ObservableObject {
     // MARK: - Server Add Folder Method
     // Modified to upload the existing folder id
         public func addFolderToServer(folder: Folder, userId: String) {
-            guard let url = URL(string: "http://192.168.0.222/project/API/addFolder.php") else {
+            guard let url = URL(string: "https://noteblocks.net/API/addFolder.php") else {
                 print("Invalid URL")
                 return
             }
@@ -827,7 +827,7 @@ class NoteStore: ObservableObject {
     
     // MARK: - Server Delete Folder Method
     public func deleteFolderFromServer(folderId: UUID, userId: String) {
-        let url = URL(string: "http://192.168.0.222/project/API/deleteFolder.php")!
+        let url = URL(string: "https://noteblocks.net/API/deleteFolder.php")!
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -872,7 +872,7 @@ class NoteStore: ObservableObject {
     
     //MARK: - update the folder on the server
     public func updateFolderOnServer(folderId: UUID, newName: String, userId: String) {
-        guard let url = URL(string: "http://192.168.0.222/project/API/updateFolder.php") else {
+        guard let url = URL(string: "https://noteblocks.net/API/updateFolder.php") else {
             print("Invalid URL")
             return
         }

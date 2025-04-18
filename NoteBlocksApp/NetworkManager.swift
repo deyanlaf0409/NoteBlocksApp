@@ -10,7 +10,7 @@ import Foundation
 class NetworkManager {
     static let shared = NetworkManager()
 
-    private let baseURL = "http://192.168.0.222/project/API/network.php"
+    private let baseURL = "https://noteblocks.net/API/network.php"
 
     private init() {}
 

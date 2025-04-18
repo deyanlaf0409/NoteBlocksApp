@@ -266,7 +266,7 @@ struct NoteDetailView: View {
             return
         }
 
-        guard let url = URL(string: "http://192.168.0.222/project/API/uploadImage.php") else {
+        guard let url = URL(string: "https://noteblocks.net/API/uploadImage.php") else {
             completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
             return
         }

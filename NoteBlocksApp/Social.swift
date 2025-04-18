@@ -32,6 +32,7 @@ struct SocialView: View {
     @State private var friendRequests: [FriendRequest] = []
     @State private var alertMessage: String = ""  // Shared alert message
     @State private var showAlert: Bool = false    // Shared alert flag
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         NavigationStack {
@@ -52,7 +53,6 @@ struct SocialView: View {
                 Spacer()
             }
             .navigationTitle("Network")
-            .navigationBarTitleDisplayMode(.inline)
             .onAppear {
                 fetchNetworkData()
             }
@@ -62,6 +62,33 @@ struct SocialView: View {
             // Move the navigation destination here to ensure it's always available
             .navigationDestination(for: SharedNote.self) { note in
                 FullNoteView(note: note)
+            }
+        }
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    dismiss()
+                }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                        Text("Home")
+                    }
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .padding(.vertical, 3.5)
+                    .padding(.horizontal, 12)
+                    .frame(maxWidth: 150)
+                    .background(
+                        LinearGradient(
+                            gradient: Gradient(colors: [Color.primary, Color.primary]),
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .foregroundColor(.gray)
+                    .cornerRadius(15)
+                    .shadow(color: Color.black.opacity(0.5), radius: 2, x: 1, y: 1)
+                }
             }
         }
     }
@@ -205,8 +232,9 @@ struct FriendSearchView: View {
 
             HStack {
                 TextField("Enter username", text: $searchText)
-                    .padding(7)
+                    .padding(10)
                     .background(RoundedRectangle(cornerRadius: 25).fill(Color(.systemGray6)))
+                    .frame(height: 40)  // Set a consistent height for the TextField
                     .padding(.leading, 10)
 
                 Button(action: {
@@ -216,8 +244,11 @@ struct FriendSearchView: View {
                 }) {
                     Image(systemName: "person.badge.plus")
                         .foregroundColor(.orange)
-                        .font(.system(size: 25))
-                        .padding()
+                        .font(.system(size: 17))  // Increased font size for better visibility
+                        .padding(10)
+                        .background(Color.primary)
+                        .cornerRadius(10)
+                        .frame(width: 40, height: 40)  // Adjusted size for consistency
                 }
                 .disabled(searchText.isEmpty)
 
@@ -226,12 +257,17 @@ struct FriendSearchView: View {
                 }) {
                     Image(systemName: "qrcode.viewfinder")
                         .foregroundColor(.orange)
-                        .font(.system(size: 25))
-                        .padding()
+                        .font(.system(size: 20))  // Increased font size for better visibility
+                        .padding(10)
+                        .background(Color.primary)
+                        .cornerRadius(10)
+                        .frame(width: 40, height: 40)  // Adjusted size for consistency
                 }
             }
             .padding(.horizontal)
-            .padding(.top, 0)
+            .padding(.top, 10)
+            .padding(.bottom, 5)
+
 
  
 
@@ -431,6 +467,7 @@ struct FullScreenImageViewSocial: View {
 // Full note modal
 struct FullNoteView: View {
     var note: SharedNote
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         ScrollView {
@@ -448,7 +485,34 @@ struct FullNoteView: View {
             }
             .padding()
         }
-        .navigationBarTitle("Note Details", displayMode: .inline) // Optional: Add a title for the navigation bar
+        .navigationBarTitle("Note Details", displayMode: .inline)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    dismiss()
+                }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                        Text("Back")
+                    }
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .padding(.vertical, 3.5)
+                    .padding(.horizontal, 12)
+                    .frame(maxWidth: 150)
+                    .background(
+                        LinearGradient(
+                            gradient: Gradient(colors: [Color.primary, Color.primary]),
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .foregroundColor(.gray)
+                    .cornerRadius(15)
+                    .shadow(color: Color.black.opacity(0.5), radius: 2, x: 1, y: 1)
+                }
+            }
+        }
     }
 }
 

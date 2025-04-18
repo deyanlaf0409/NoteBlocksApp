@@ -114,7 +114,7 @@ struct NotesInFolderView: View {
                     .frame(maxWidth: 150)
                     .background(
                         LinearGradient(
-                            gradient: Gradient(colors: [Color.black, Color.black]),
+                            gradient: Gradient(colors: [Color.primary, Color.primary]),
                             startPoint: .leading,
                             endPoint: .trailing
                         )

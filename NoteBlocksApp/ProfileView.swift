@@ -35,7 +35,7 @@ struct ProfileView: View {
                     .padding(.bottom, 5)
                 
                 Button(action: {
-                    if let url = URL(string: "http://192.168.0.222/project/profile/profilePage/profile-page.php") {
+                    if let url = URL(string: "https://noteblocks.net/profile/profilePage/profile-page.php") {
                         UIApplication.shared.open(url)
                     }
                 }) {
@@ -140,20 +140,14 @@ struct ProfileView: View {
     
     func fetchFriends() {
         guard !userId.isEmpty else {
-            DispatchQueue.main.async {
-                self.errorMessage = "No userId found."
-            }
+            self.errorMessage = "No userId found."
             return
         }
-        
-        self.isLoading = true
         
         let parameters = ["action": "list_friends", "user_id": userId]
         
         NetworkManager.shared.makeRequest(parameters: parameters) { result in
             DispatchQueue.main.async {
-                self.isLoading = false
-                
                 switch result {
                 case .success(let jsonResponse):
                     if let friendsData = jsonResponse["friends"] as? [[String: Any]] {
@@ -169,6 +163,7 @@ struct ProfileView: View {
             }
         }
     }
+
     
     func generateQRCodeLocally() {
         DispatchQueue.global(qos: .userInitiated).async { // Offload QR code generation to background thread

@@ -272,7 +272,7 @@ struct EditNoteView: View {
                 }) {
                     HStack {
                         Image(systemName: "chevron.left")
-                        Text("Home")
+                        Text("Back")
                     }
                     .font(.system(size: 18, weight: .bold, design: .rounded))
                     .padding(.vertical, 3.5)

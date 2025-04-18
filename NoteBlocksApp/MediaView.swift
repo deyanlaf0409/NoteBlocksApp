@@ -249,7 +249,7 @@ struct MediaPickerView: View {
 
         // If user is not a guest, proceed with the server request to remove the image
         let noteID = self.noteID.uuidString
-        let urlString = "http://192.168.0.222/project/API/removeImage.php"
+        let urlString = "https://noteblocks.net/API/removeImage.php"
 
         var request = URLRequest(url: URL(string: urlString)!)
         request.httpMethod = "DELETE"

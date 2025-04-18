@@ -46,6 +46,7 @@ struct FolderView: View {
                             noteStore.loadFolders()
                             newFolderName = ""
                             folderListUpdated.toggle()
+                            dismissKeyboard()
                         }
                     }) {
                         Text("+ 📁 Add Folder")
@@ -131,6 +132,10 @@ struct FolderView: View {
             let folder = noteStore.folders[index]
             noteStore.deleteFolder(folder)
         }
+    }
+    
+    private func dismissKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }
 

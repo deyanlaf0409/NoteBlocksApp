@@ -59,7 +59,7 @@ struct ShareNoteModal: View {
     }
 
     func toggleSharedAPI(noteId: UUID) {
-        let url = URL(string: "http://192.168.0.222/project/API/share.php")!
+        let url = URL(string: "https://noteblocks.net/API/share.php")!
         
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"

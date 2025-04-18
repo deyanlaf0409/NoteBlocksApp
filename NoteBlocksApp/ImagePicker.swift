@@ -92,7 +92,7 @@ struct ImagePicker: UIViewControllerRepresentable {
             }
 
             // URLRequest setup for image upload
-            guard let url = URL(string: "http://192.168.0.222/project/API/uploadImage.php") else {
+            guard let url = URL(string: "https://noteblocks.net/API/uploadImage.php") else {
                 print("Invalid URL")
                 return
             }

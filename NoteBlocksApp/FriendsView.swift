@@ -21,6 +21,7 @@ struct FriendsView: View {
     @State private var showRemoveConfirmation: Bool = false
     @State private var noFriendsMessage: String? = nil
     @State private var searchText: String = ""
+    @Environment(\.dismiss) private var dismiss
 
 
     let userId = UserDefaults.standard.string(forKey: "userId")
@@ -91,6 +92,34 @@ struct FriendsView: View {
             }
         }
         .navigationTitle("Friends")
+        .navigationBarBackButtonHidden(true)
+        
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    dismiss()
+                }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                        Text("Back")
+                    }
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .padding(.vertical, 3.5)
+                    .padding(.horizontal, 12)
+                    .frame(maxWidth: 150)
+                    .background(
+                        LinearGradient(
+                            gradient: Gradient(colors: [Color.primary, Color.primary]),
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .foregroundColor(.gray)
+                    .cornerRadius(15)
+                    .shadow(color: Color.black.opacity(0.5), radius: 2, x: 1, y: 1)
+                }
+            }
+        }
         .confirmationDialog(
             "Are you sure you want to remove this friend?",
             isPresented: $showRemoveConfirmation,
