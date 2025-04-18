@@ -65,7 +65,7 @@ class NoteStore: ObservableObject {
                    let feedArray = json["feed"] as? [[String: Any]] {
                     DispatchQueue.main.async {
                         self.sharedNotes = feedArray.compactMap { dict in
-                            guard let id = UUID().uuidString as String?,
+                            guard let id = dict["card_id"] as? String,
                                   let username = dict["username"] as? String,
                                   let title = dict["title"] as? String,
                                   let body = dict["body"] as? String else {

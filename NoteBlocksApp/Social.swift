@@ -470,22 +470,39 @@ struct FullNoteView: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 12) {
-                Text(note.username)
-                    .foregroundColor(.secondary)
-                    .font(.subheadline)
-                    .padding(.bottom, 10)
-                    .frame(maxWidth: .infinity, alignment: .leading) // Align to the left
+        VStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(note.username)
+                        .foregroundColor(.secondary)
+                        .font(.subheadline)
+                        .padding(.bottom, 10)
+                        .frame(maxWidth: .infinity, alignment: .leading)
 
-                Text(note.body)
-                    .font(.headline)
-                    .padding(.bottom, 10)
-                    .frame(maxWidth: .infinity, alignment: .leading) // Align to the left
+                    Text(note.body)
+                        .font(.headline)
+                        .padding(.bottom, 10)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .padding()
             }
-            .padding()
+
+            // Centered red flag button at the bottom
+            Button(action: {
+                let userId = UserDefaults.standard.string(forKey: "userId") ?? ""
+                Task {
+                    await reportNote(noteID: note.id, userID: userId)
+                }
+            }) {
+                Label("Report", systemImage: "flag.fill")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundColor(.red)
+                    .padding()
+            }
+            .accessibilityLabel("Report")
+            .frame(maxWidth: .infinity)
         }
-        .navigationBarTitle("Note Details", displayMode: .inline)
+        .navigationBarTitle(note.text, displayMode: .inline)
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
@@ -514,18 +531,37 @@ struct FullNoteView: View {
             }
         }
     }
+
+    func reportNote(noteID: String, userID: String) async {
+        guard let url = URL(string: "https://noteblocks.net/API/report.php") else { return }
+
+        let payload: [String: Any] = [
+            "note_id": noteID,
+            "user_id": userID
+        ]
+
+        do {
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.httpBody = try JSONSerialization.data(withJSONObject: payload)
+
+            let (data, response) = try await URLSession.shared.data(for: request)
+
+            if let httpResponse = response as? HTTPURLResponse,
+               httpResponse.statusCode == 200 {
+                if let jsonResponse = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+                   let message = jsonResponse["message"] as? String {
+                    print("Server response: \(message)")
+                }
+            } else {
+                print("Failed to report note: \(String(data: data, encoding: .utf8) ?? "Unknown error")")
+            }
+        } catch {
+            print("Error reporting note: \(error)")
+        }
+    }
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
 

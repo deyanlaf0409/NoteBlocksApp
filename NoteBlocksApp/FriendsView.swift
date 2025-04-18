@@ -92,6 +92,7 @@ struct FriendsView: View {
             }
         }
         .navigationTitle("Friends")
+        .navigationBarTitleDisplayMode(.large)
         .navigationBarBackButtonHidden(true)
         
         .toolbar {
