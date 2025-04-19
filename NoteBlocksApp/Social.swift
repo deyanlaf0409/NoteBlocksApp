@@ -468,6 +468,7 @@ struct FullScreenImageViewSocial: View {
 struct FullNoteView: View {
     var note: SharedNote
     @Environment(\.dismiss) private var dismiss
+    @State private var showSuccess = false
 
     var body: some View {
         VStack {
@@ -530,6 +531,54 @@ struct FullNoteView: View {
                 }
             }
         }
+        .overlay(
+            Group {
+                if showSuccess {
+                    ZStack(alignment: .topTrailing) {
+                        VStack(spacing: 10) {
+                            Image("report")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 180, height: 180)
+
+                            Text("Thanks for keeping Noteblocks safe!")
+                                .font(.title2)
+                                .fontWeight(.semibold)
+                                .multilineTextAlignment(.center)
+                                .foregroundColor(.black)
+
+                            Text("Your report has been submitted. We’ll review the content shortly.")
+                                .font(.body)
+                                .foregroundColor(.gray)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 30)
+
+                        }
+                        .padding()
+                        .frame(maxWidth: 300)
+                        .background(Color.white)
+                        .cornerRadius(20)
+                        .shadow(radius: 3)
+
+                        // Close (X) button
+                        Button(action: {
+                            showSuccess = false
+                        }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.gray)
+                                .font(.system(size: 24))
+                                .padding(10)
+                        }
+                    }
+                    .transition(.scale)
+                    .animation(.easeInOut(duration: 0.25), value: showSuccess)
+                }
+            }
+        )
+
+
+
+
     }
 
     func reportNote(noteID: String, userID: String) async {
@@ -546,21 +595,33 @@ struct FullNoteView: View {
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             request.httpBody = try JSONSerialization.data(withJSONObject: payload)
 
-            let (data, response) = try await URLSession.shared.data(for: request)
+            let (_, _) = try await URLSession.shared.data(for: request)
 
-            if let httpResponse = response as? HTTPURLResponse,
-               httpResponse.statusCode == 200 {
-                if let jsonResponse = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
-                   let message = jsonResponse["message"] as? String {
-                    print("Server response: \(message)")
-                }
-            } else {
-                print("Failed to report note: \(String(data: data, encoding: .utf8) ?? "Unknown error")")
+            // Always show the success box, regardless of server response
+            await MainActor.run {
+                showSuccess = true
             }
+
+            try await Task.sleep(nanoseconds: 10_000_000_000)
+
+            await MainActor.run {
+                showSuccess = false
+            }
+
         } catch {
-            print("Error reporting note: \(error)")
+            await MainActor.run {
+                showSuccess = true
+            }
+
+            try? await Task.sleep(nanoseconds: 10_000_000_000)
+
+            await MainActor.run {
+                showSuccess = false
+            }
         }
     }
+
+
 }
 
 
