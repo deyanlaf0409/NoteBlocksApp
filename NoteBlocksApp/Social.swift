@@ -555,12 +555,13 @@ struct FullNoteView: View {
 
                         }
                         .padding()
-                        .frame(maxWidth: 300)
+                        .frame(maxWidth: 300, maxHeight: 400)
                         .background(Color.white)
                         .cornerRadius(20)
                         .shadow(radius: 3)
 
                         // Close (X) button
+                        /*
                         Button(action: {
                             showSuccess = false
                         }) {
@@ -569,6 +570,7 @@ struct FullNoteView: View {
                                 .font(.system(size: 24))
                                 .padding(10)
                         }
+                        */
                     }
                     .transition(.scale)
                     .animation(.easeInOut(duration: 0.25), value: showSuccess)
@@ -602,7 +604,7 @@ struct FullNoteView: View {
                 showSuccess = true
             }
 
-            try await Task.sleep(nanoseconds: 10_000_000_000)
+            try await Task.sleep(nanoseconds: 7_000_000_000)
 
             await MainActor.run {
                 showSuccess = false
@@ -613,7 +615,7 @@ struct FullNoteView: View {
                 showSuccess = true
             }
 
-            try? await Task.sleep(nanoseconds: 10_000_000_000)
+            try? await Task.sleep(nanoseconds: 7_000_000_000)
 
             await MainActor.run {
                 showSuccess = false
